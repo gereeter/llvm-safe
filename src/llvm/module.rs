@@ -4,7 +4,7 @@ use std::marker::PhantomData;
 use llvm_sys::prelude::*;
 use llvm_sys::core::*;
 
-use id::{Id, IdRef};
+use id::Id;
 
 use llvm::{Context, Type, Function};
 
@@ -32,12 +32,11 @@ impl<'cid, 'context, 'mid> Module<'cid, 'context, 'mid> {
     }
 
     pub fn add_function<'module, 'fid>(&'module self, id: Id<'fid>, name: &CStr, ty: Type<'cid>) -> Function<'cid, 'mid, 'module, 'fid> {
-        Function {
-            _context_id: IdRef::new(),
-            _module_id: IdRef::new(),
-            _module: PhantomData,
-            _id: id,
-            llvm_function: unsafe { LLVMAddFunction(self.llvm_module, name.as_ptr(), ty.as_raw()) }
+        unsafe {
+            Function::from_raw(
+                id,
+                LLVMAddFunction(self.llvm_module, name.as_ptr(), ty.as_raw())
+            )
         }
     }
 }
