@@ -1,10 +1,8 @@
-use std::ffi::CStr;
 use std::marker::PhantomData;
 
 use llvm_sys::prelude::*;
-use llvm_sys::core::*;
 
-use id::{Id, IdRef};
+use id::IdRef;
 
 #[derive(Copy, Clone)]
 pub struct BasicBlock<'cid, 'fid, 'function> {

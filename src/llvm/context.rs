@@ -1,7 +1,7 @@
 use llvm_sys::prelude::*;
 use llvm_sys::core::*;
 
-use id::{Id, IdRef};
+use id::Id;
 
 pub struct Context<'cid> {
     _id: Id<'cid>,

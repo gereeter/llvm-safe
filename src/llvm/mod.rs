@@ -1,11 +1,3 @@
-use std::ffi::CStr;
-use std::marker::PhantomData;
-
-use llvm_sys::prelude::*;
-use llvm_sys::core::*;
-
-use id::{Id, IdRef};
-
 pub use self::context::Context;
 pub use self::module::Module;
 pub use self::function::Function;
