@@ -6,6 +6,12 @@ use llvm_sys::core::*;
 
 use id::{Id, IdRef};
 
+pub use self::context::Context;
+
+pub mod context;
+
+
+
 //
 // TODO: Error Checking
 //   This is currently a safety hole.
@@ -27,28 +33,6 @@ use id::{Id, IdRef};
 // TODO: Missing functionality
 //
 
-pub struct Context<'cid> {
-    _id: Id<'cid>,
-    llvm_context: LLVMContextRef
-}
-
-impl<'cid> Drop for Context<'cid> {
-   fn drop(&mut self) {
-       unsafe {
-           LLVMContextDispose(self.llvm_context);
-       }
-   }
-}
-
-impl<'cid> Context<'cid> {
-    pub fn new(id: Id<'cid>) -> Context<'cid> {
-        Context {
-            _id: id,
-            llvm_context: unsafe { LLVMContextCreate() }
-        }
-    }
-}
-
 pub struct Module<'cid: 'context, 'context, 'mid> {
     _context: PhantomData<&'context Context<'cid>>,
     _id: Id<'mid>,
@@ -68,7 +52,7 @@ impl<'cid, 'context, 'mid> Module<'cid, 'context, 'mid> {
         Module {
             _context: PhantomData,
             _id: id,
-            llvm_module: unsafe { LLVMModuleCreateWithNameInContext(name.as_ptr(), context.llvm_context) }
+            llvm_module: unsafe { LLVMModuleCreateWithNameInContext(name.as_ptr(), context.as_raw()) }
         }
     }
 
@@ -93,7 +77,7 @@ impl<'cid> Type<'cid> {
     pub fn f64(context: &Context<'cid>) -> Type<'cid> {
        Type {
            _context_id: IdRef::new(),
-           llvm_type: unsafe { LLVMDoubleTypeInContext(context.llvm_context) }
+           llvm_type: unsafe { LLVMDoubleTypeInContext(context.as_raw()) }
        }
     }
 
@@ -123,7 +107,7 @@ impl<'cid> Builder<'cid> {
     pub fn new(context: &Context<'cid>) -> Builder<'cid> {
         Builder {
             _context_id: IdRef::new(),
-            llvm_builder: unsafe { LLVMCreateBuilderInContext(context.llvm_context) }
+            llvm_builder: unsafe { LLVMCreateBuilderInContext(context.as_raw()) }
         }
     }
 
@@ -237,7 +221,7 @@ impl<'cid, 'mid: 'module, 'module, 'fid> Function<'cid, 'mid, 'module, 'fid> {
             _context_id: IdRef::new(),
             _function_id: IdRef::new(),
             _function: PhantomData,
-            llvm_basic_block: unsafe { LLVMAppendBasicBlockInContext(context.llvm_context, self.llvm_function, name.as_ptr()) }
+            llvm_basic_block: unsafe { LLVMAppendBasicBlockInContext(context.as_raw(), self.llvm_function, name.as_ptr()) }
         }
     }
 
