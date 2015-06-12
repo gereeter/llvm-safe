@@ -31,7 +31,7 @@ impl<'cid> Builder<'cid> {
 
     pub fn position_at_end<'fid, 'function, 'builder>(&'builder mut self, block: BasicBlock<'cid, 'fid, 'function>) -> PositionedBuilder<'cid, 'fid, 'function, 'builder> {
         unsafe {
-            LLVMPositionBuilderAtEnd(self.llvm_builder, block.llvm_basic_block);
+            LLVMPositionBuilderAtEnd(self.llvm_builder, block.as_raw());
         }
         PositionedBuilder {
             _context_id: IdRef::new(),
@@ -54,7 +54,7 @@ pub struct PositionedBuilder<'cid: 'builder, 'fid, 'function, 'builder> {
 impl<'cid: 'builder, 'fid, 'function, 'builder> PositionedBuilder<'cid, 'fid, 'function, 'builder> {
     pub fn br(&self, target: BasicBlock<'cid, 'fid, 'function>) -> Value<'cid, 'fid, 'function> {
         unsafe {
-            Value::from_raw(LLVMBuildBr(self.llvm_builder, target.llvm_basic_block))
+            Value::from_raw(LLVMBuildBr(self.llvm_builder, target.as_raw()))
         }
     }
 

@@ -18,11 +18,8 @@ pub struct Function<'cid, 'mid: 'module, 'module, 'fid> {
 
 impl<'cid, 'mid: 'module, 'module, 'fid> Function<'cid, 'mid, 'module, 'fid> {
     pub fn append_basic_block<'function>(&'function self, name: &CStr, context: &Context<'cid>) -> BasicBlock<'cid, 'fid, 'function> {
-        BasicBlock {
-            _context_id: IdRef::new(),
-            _function_id: IdRef::new(),
-            _function: PhantomData,
-            llvm_basic_block: unsafe { LLVMAppendBasicBlockInContext(context.as_raw(), self.llvm_function, name.as_ptr()) }
+        unsafe {
+            BasicBlock::from_raw(LLVMAppendBasicBlockInContext(context.as_raw(), self.llvm_function, name.as_ptr()))
         }
     }
 

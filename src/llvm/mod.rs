@@ -10,12 +10,14 @@ pub use self::context::Context;
 pub use self::module::Module;
 pub use self::function::Function;
 pub use self::builder::{Builder, PositionedBuilder};
+pub use self::block::BasicBlock;
 pub use self::value::Value;
 pub use self::ty::Type;
 
 pub mod context;
 pub mod module;
 pub mod function;
+pub mod block;
 pub mod builder;
 pub mod value;
 pub mod ty;
@@ -41,11 +43,3 @@ pub mod ty;
 //
 // TODO: Missing functionality
 //
-
-#[derive(Copy, Clone)]
-pub struct BasicBlock<'cid, 'fid, 'function> {
-    _context_id: IdRef<'cid>,
-    _function_id: IdRef<'fid>,
-    _function: PhantomData<&'function ()>,
-    llvm_basic_block: LLVMBasicBlockRef
-}
