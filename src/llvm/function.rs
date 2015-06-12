@@ -27,11 +27,8 @@ impl<'cid, 'mid: 'module, 'module, 'fid> Function<'cid, 'mid, 'module, 'fid> {
     }
 
     pub fn param<'function>(&'function self, index: u32) -> Value<'cid, 'fid, 'function> {
-        Value {
-            _context_id: IdRef::new(),
-            _function_id: IdRef::new(),
-            _function: PhantomData,
-            llvm_value: unsafe { LLVMGetParam(self.llvm_function, index) }
+        unsafe {
+            Value::from_raw(LLVMGetParam(self.llvm_function, index))
         }
     }
 

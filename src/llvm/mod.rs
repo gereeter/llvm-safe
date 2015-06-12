@@ -9,11 +9,15 @@ use id::{Id, IdRef};
 pub use self::context::Context;
 pub use self::module::Module;
 pub use self::function::Function;
+
+pub use self::value::Value;
 pub use self::ty::Type;
 
 pub mod context;
 pub mod module;
 pub mod function;
+
+pub mod value;
 pub mod ty;
 
 
@@ -83,74 +87,50 @@ pub struct PositionedBuilder<'cid: 'builder, 'fid, 'function, 'builder> {
 
 impl<'cid: 'builder, 'fid, 'function, 'builder> PositionedBuilder<'cid, 'fid, 'function, 'builder> {
     pub fn br(&self, target: BasicBlock<'cid, 'fid, 'function>) -> Value<'cid, 'fid, 'function> {
-        Value {
-            _context_id: IdRef::new(),
-            _function_id: IdRef::new(),
-            _function: PhantomData,
-            llvm_value: unsafe { LLVMBuildBr(self.llvm_builder, target.llvm_basic_block) }
+        unsafe {
+            Value::from_raw(LLVMBuildBr(self.llvm_builder, target.llvm_basic_block))
         }
     }
 
     pub fn or(&self, lhs: Value<'cid, 'fid, 'function>, rhs: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
-        Value {
-            _context_id: IdRef::new(),
-            _function_id: IdRef::new(),
-            _function: PhantomData,
-            llvm_value: unsafe { LLVMBuildOr(self.llvm_builder, lhs.llvm_value, rhs.llvm_value, name.as_ptr()) }
+        unsafe {
+            Value::from_raw(LLVMBuildOr(self.llvm_builder, lhs.as_raw(), rhs.as_raw(), name.as_ptr()))
         }
     }
 
     pub fn add(&self, lhs: Value<'cid, 'fid, 'function>, rhs: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
-        Value {
-            _context_id: IdRef::new(),
-            _function_id: IdRef::new(),
-            _function: PhantomData,
-            llvm_value: unsafe { LLVMBuildAdd(self.llvm_builder, lhs.llvm_value, rhs.llvm_value, name.as_ptr()) }
+        unsafe {
+            Value::from_raw(LLVMBuildAdd(self.llvm_builder, lhs.as_raw(), rhs.as_raw(), name.as_ptr()))
         }
     }
 
     pub fn and(&self, lhs: Value<'cid, 'fid, 'function>, rhs: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
-        Value {
-            _context_id: IdRef::new(),
-            _function_id: IdRef::new(),
-            _function: PhantomData,
-            llvm_value: unsafe { LLVMBuildAnd(self.llvm_builder, lhs.llvm_value, rhs.llvm_value, name.as_ptr()) }
+        unsafe {
+            Value::from_raw(LLVMBuildAnd(self.llvm_builder, lhs.as_raw(), rhs.as_raw(), name.as_ptr()))
         }
     }
 
     pub fn mul(&self, lhs: Value<'cid, 'fid, 'function>, rhs: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
-        Value {
-            _context_id: IdRef::new(),
-            _function_id: IdRef::new(),
-            _function: PhantomData,
-            llvm_value: unsafe { LLVMBuildMul(self.llvm_builder, lhs.llvm_value, rhs.llvm_value, name.as_ptr()) }
+        unsafe {
+            Value::from_raw(LLVMBuildMul(self.llvm_builder, lhs.as_raw(), rhs.as_raw(), name.as_ptr()))
         }
     }
 
     pub fn neg(&self, value: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
-        Value {
-            _context_id: IdRef::new(),
-            _function_id: IdRef::new(),
-            _function: PhantomData,
-            llvm_value: unsafe { LLVMBuildNeg(self.llvm_builder, value.llvm_value, name.as_ptr()) }
+        unsafe {
+            Value::from_raw(LLVMBuildNeg(self.llvm_builder, value.as_raw(), name.as_ptr()))
         }
     }
 
     pub fn not(&self, value: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
-        Value {
-            _context_id: IdRef::new(),
-            _function_id: IdRef::new(),
-            _function: PhantomData,
-            llvm_value: unsafe { LLVMBuildNot(self.llvm_builder, value.llvm_value, name.as_ptr()) }
+        unsafe {
+            Value::from_raw(LLVMBuildNot(self.llvm_builder, value.as_raw(), name.as_ptr()))
         }
     }
 
     pub fn ret(&self, value: Value<'cid, 'fid, 'function>) -> Value<'cid, 'fid, 'function> {
-        Value {
-            _context_id: IdRef::new(),
-            _function_id: IdRef::new(),
-            _function: PhantomData,
-            llvm_value: unsafe { LLVMBuildRet(self.llvm_builder, value.llvm_value) }
+        unsafe {
+            Value::from_raw(LLVMBuildRet(self.llvm_builder, value.as_raw()))
         }
     }
 }
@@ -161,12 +141,4 @@ pub struct BasicBlock<'cid, 'fid, 'function> {
     _function_id: IdRef<'fid>,
     _function: PhantomData<&'function ()>,
     llvm_basic_block: LLVMBasicBlockRef
-}
-
-#[derive(Copy, Clone)]
-pub struct Value<'cid, 'fid, 'function> {
-    _context_id: IdRef<'cid>,
-    _function_id: IdRef<'fid>,
-    _function: PhantomData<&'function ()>,
-    llvm_value: LLVMValueRef
 }
