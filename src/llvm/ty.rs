@@ -12,10 +12,52 @@ pub struct Type<'cid> {
 }
 
 impl<'cid> Type<'cid> {
+    pub fn f32(context: &Context<'cid>) -> Type<'cid> {
+       Type {
+           _context_id: IdRef::new(),
+           llvm_type: unsafe { LLVMFloatTypeInContext(context.as_raw()) }
+       }
+    }
+
     pub fn f64(context: &Context<'cid>) -> Type<'cid> {
        Type {
            _context_id: IdRef::new(),
            llvm_type: unsafe { LLVMDoubleTypeInContext(context.as_raw()) }
+       }
+    }
+
+    pub fn i1(context: &Context<'cid>) -> Type<'cid> {
+       Type {
+           _context_id: IdRef::new(),
+           llvm_type: unsafe { LLVMInt1TypeInContext(context.as_raw()) }
+       }
+    }
+
+    pub fn i8(context: &Context<'cid>) -> Type<'cid> {
+       Type {
+           _context_id: IdRef::new(),
+           llvm_type: unsafe { LLVMInt8TypeInContext(context.as_raw()) }
+       }
+    }
+
+    pub fn i16(context: &Context<'cid>) -> Type<'cid> {
+       Type {
+           _context_id: IdRef::new(),
+           llvm_type: unsafe { LLVMInt16TypeInContext(context.as_raw()) }
+       }
+    }
+
+    pub fn i32(context: &Context<'cid>) -> Type<'cid> {
+       Type {
+           _context_id: IdRef::new(),
+           llvm_type: unsafe { LLVMInt32TypeInContext(context.as_raw()) }
+       }
+    }
+
+    pub fn i64(context: &Context<'cid>) -> Type<'cid> {
+       Type {
+           _context_id: IdRef::new(),
+           llvm_type: unsafe { LLVMInt64TypeInContext(context.as_raw()) }
        }
     }
 

@@ -11,8 +11,8 @@ fn main() {
         id::with(|module_id| {
             let module = llvm::Module::new(module_id, &CString::new("mymodule").unwrap(), &context);
             id::with(|function_id| {
-                let f64_ty = llvm::Type::f64(&context);
-                let func_ty = llvm::Type::function(&[f64_ty], f64_ty);
+                let i32_ty = llvm::Type::i32(&context);
+                let func_ty = llvm::Type::function(&[i32_ty], i32_ty);
                 let function = module.add_function(function_id, &CString::new("square").unwrap(), func_ty);
                 let mut builder = llvm::Builder::new(&context);
 
