@@ -150,7 +150,7 @@ pub struct PositionedBuilder<'cid: 'builder, 'fid, 'function, 'builder> {
 }
 
 impl<'cid: 'builder, 'fid, 'function, 'builder> PositionedBuilder<'cid, 'fid, 'function, 'builder> {
-    pub fn build_br(&self, target: BasicBlock<'cid, 'fid, 'function>) -> Value<'cid, 'fid, 'function> {
+    pub fn br(&self, target: BasicBlock<'cid, 'fid, 'function>) -> Value<'cid, 'fid, 'function> {
         Value {
             _context_id: IdRef::new(),
             _function_id: IdRef::new(),
@@ -159,7 +159,7 @@ impl<'cid: 'builder, 'fid, 'function, 'builder> PositionedBuilder<'cid, 'fid, 'f
         }
     }
 
-    pub fn build_or(&self, lhs: Value<'cid, 'fid, 'function>, rhs: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
+    pub fn or(&self, lhs: Value<'cid, 'fid, 'function>, rhs: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
         Value {
             _context_id: IdRef::new(),
             _function_id: IdRef::new(),
@@ -168,7 +168,7 @@ impl<'cid: 'builder, 'fid, 'function, 'builder> PositionedBuilder<'cid, 'fid, 'f
         }
     }
 
-    pub fn build_add(&self, lhs: Value<'cid, 'fid, 'function>, rhs: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
+    pub fn add(&self, lhs: Value<'cid, 'fid, 'function>, rhs: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
         Value {
             _context_id: IdRef::new(),
             _function_id: IdRef::new(),
@@ -177,7 +177,7 @@ impl<'cid: 'builder, 'fid, 'function, 'builder> PositionedBuilder<'cid, 'fid, 'f
         }
     }
 
-    pub fn build_and(&self, lhs: Value<'cid, 'fid, 'function>, rhs: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
+    pub fn and(&self, lhs: Value<'cid, 'fid, 'function>, rhs: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
         Value {
             _context_id: IdRef::new(),
             _function_id: IdRef::new(),
@@ -186,7 +186,7 @@ impl<'cid: 'builder, 'fid, 'function, 'builder> PositionedBuilder<'cid, 'fid, 'f
         }
     }
 
-    pub fn build_mul(&self, lhs: Value<'cid, 'fid, 'function>, rhs: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
+    pub fn mul(&self, lhs: Value<'cid, 'fid, 'function>, rhs: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
         Value {
             _context_id: IdRef::new(),
             _function_id: IdRef::new(),
@@ -195,7 +195,7 @@ impl<'cid: 'builder, 'fid, 'function, 'builder> PositionedBuilder<'cid, 'fid, 'f
         }
     }
 
-    pub fn build_neg(&self, value: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
+    pub fn neg(&self, value: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
         Value {
             _context_id: IdRef::new(),
             _function_id: IdRef::new(),
@@ -204,7 +204,7 @@ impl<'cid: 'builder, 'fid, 'function, 'builder> PositionedBuilder<'cid, 'fid, 'f
         }
     }
 
-    pub fn build_not(&self, value: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
+    pub fn not(&self, value: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
         Value {
             _context_id: IdRef::new(),
             _function_id: IdRef::new(),
@@ -213,7 +213,7 @@ impl<'cid: 'builder, 'fid, 'function, 'builder> PositionedBuilder<'cid, 'fid, 'f
         }
     }
 
-    pub fn build_ret(&self, value: Value<'cid, 'fid, 'function>) -> Value<'cid, 'fid, 'function> {
+    pub fn ret(&self, value: Value<'cid, 'fid, 'function>) -> Value<'cid, 'fid, 'function> {
         Value {
             _context_id: IdRef::new(),
             _function_id: IdRef::new(),

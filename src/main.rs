@@ -18,8 +18,9 @@ fn main() {
 
                 let entry = function.append_basic_block(&CString::new("entry").unwrap(), &context);
                 let builder = builder.position_at_end(entry);
-                let ret = builder.build_mul(function.param(0), function.param(0), &CString::new("square").unwrap());
-                builder.build_ret(ret);
+
+                let ret = builder.mul(function.param(0), function.param(0), &CString::new("square").unwrap());
+                builder.ret(ret);
 
                 function.dump();
             });
