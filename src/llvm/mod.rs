@@ -7,9 +7,10 @@ use llvm_sys::core::*;
 use id::{Id, IdRef};
 
 pub use self::context::Context;
+pub use self::ty::Type;
 
 pub mod context;
-
+pub mod ty;
 
 
 //
@@ -62,30 +63,7 @@ impl<'cid, 'context, 'mid> Module<'cid, 'context, 'mid> {
             _module_id: IdRef::new(),
             _module: PhantomData,
             _id: id,
-            llvm_function: unsafe { LLVMAddFunction(self.llvm_module, name.as_ptr(), ty.llvm_type) }
-        }
-    }
-}
-
-#[derive(Copy, Clone)]
-pub struct Type<'cid> {
-    _context_id: IdRef<'cid>,
-    llvm_type: LLVMTypeRef
-}
-
-impl<'cid> Type<'cid> {
-    pub fn f64(context: &Context<'cid>) -> Type<'cid> {
-       Type {
-           _context_id: IdRef::new(),
-           llvm_type: unsafe { LLVMDoubleTypeInContext(context.as_raw()) }
-       }
-    }
-
-    pub fn function(params: &[Type<'cid>], ret: Type<'cid>) -> Type<'cid> {
-        Type {
-            _context_id: IdRef::new(),
-            // FIXME: actually enforce that Type and LLVMTypeRef are the same in memory
-            llvm_type: unsafe { LLVMFunctionType(ret.llvm_type, params.as_ptr() as *mut LLVMTypeRef, params.len() as u32, 0) }
+            llvm_function: unsafe { LLVMAddFunction(self.llvm_module, name.as_ptr(), ty.as_raw()) }
         }
     }
 }
