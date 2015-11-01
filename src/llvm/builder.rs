@@ -5,98 +5,97 @@ use llvm_sys::prelude::*;
 use llvm_sys::core::*;
 
 use id::IdRef;
+use owned::{Owned, DropInPlace};
 
 use llvm::{Context, BasicBlock, Value};
 
-pub struct Builder<'cid> {
-    _context_id: IdRef<'cid>,
-    llvm_builder: LLVMBuilderRef
+pub struct Builder<'cid: 'context, 'context> {
+    _context: PhantomData<&'context Context<'cid>>
 }
 
-impl<'cid> Drop for Builder<'cid> {
-    fn drop(&mut self) {
+impl<'cid, 'context> DropInPlace for Builder<'cid, 'context> {
+    unsafe fn drop_in_place(&mut self) {
+        LLVMDisposeBuilder(self.as_raw());
+    }
+}
+
+impl<'cid, 'context> Builder<'cid, 'context> {
+    pub fn new(context: &'context Context<'cid>) -> Owned<Builder<'cid, 'context>> {
         unsafe {
-            LLVMDisposeBuilder(self.llvm_builder);
-        }
-    }
-}
-
-impl<'cid> Builder<'cid> {
-    pub fn new(context: &Context<'cid>) -> Builder<'cid> {
-        Builder {
-            _context_id: IdRef::new(),
-            llvm_builder: unsafe { LLVMCreateBuilderInContext(context.as_raw()) }
+            Owned::from_raw(
+                LLVMCreateBuilderInContext(context.as_raw()) as *mut Builder
+            )
         }
     }
 
-    pub fn position_at_end<'fid, 'function, 'builder>(&'builder mut self, block: BasicBlock<'cid, 'fid, 'function>) -> PositionedBuilder<'cid, 'fid, 'function, 'builder> {
+    pub fn position_at_end<'fid, 'function, 'builder>(&'builder mut self, block: BasicBlock<'cid, 'fid, 'function>) -> &'builder mut PositionedBuilder<'cid, 'context, 'fid, 'function> {
         unsafe {
-            LLVMPositionBuilderAtEnd(self.llvm_builder, block.as_raw());
+            LLVMPositionBuilderAtEnd(self.as_raw(), block.as_raw());
+            &mut *(self as *mut Builder as *mut PositionedBuilder)
         }
-        PositionedBuilder {
-            _context_id: IdRef::new(),
-            _function_id: IdRef::new(),
-            _function: PhantomData,
-            _builder: PhantomData,
-            llvm_builder: self.llvm_builder
-        }
+    }
+
+    pub fn as_raw(&self) -> LLVMBuilderRef {
+        self as *const Builder as *mut Builder as LLVMBuilderRef
     }
 }
 
-pub struct PositionedBuilder<'cid: 'builder, 'fid, 'function, 'builder> {
-    _context_id: IdRef<'cid>,
+pub struct PositionedBuilder<'cid: 'context, 'context, 'fid, 'function> {
     _function_id: IdRef<'fid>,
     _function: PhantomData<&'function ()>,
-    _builder: PhantomData<&'builder mut Builder<'cid>>,
-    llvm_builder: LLVMBuilderRef
+    _builder: PhantomData<Builder<'cid, 'context>>
 }
 
-impl<'cid: 'builder, 'fid, 'function, 'builder> PositionedBuilder<'cid, 'fid, 'function, 'builder> {
-    pub fn br(&self, target: BasicBlock<'cid, 'fid, 'function>) -> Value<'cid, 'fid, 'function> {
+impl<'cid, 'context, 'fid, 'function> PositionedBuilder<'cid, 'context, 'fid, 'function> {
+    pub fn br(&mut self, target: BasicBlock<'cid, 'fid, 'function>) -> Value<'cid, 'fid, 'function> {
         unsafe {
-            Value::from_raw(LLVMBuildBr(self.llvm_builder, target.as_raw()))
+            Value::from_raw(LLVMBuildBr(self.as_raw(), target.as_raw()))
         }
     }
 
-    pub fn or(&self, lhs: Value<'cid, 'fid, 'function>, rhs: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
+    pub fn or(&mut self, lhs: Value<'cid, 'fid, 'function>, rhs: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
         unsafe {
-            Value::from_raw(LLVMBuildOr(self.llvm_builder, lhs.as_raw(), rhs.as_raw(), name.as_ptr()))
+            Value::from_raw(LLVMBuildOr(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()))
         }
     }
 
-    pub fn add(&self, lhs: Value<'cid, 'fid, 'function>, rhs: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
+    pub fn add(&mut self, lhs: Value<'cid, 'fid, 'function>, rhs: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
         unsafe {
-            Value::from_raw(LLVMBuildAdd(self.llvm_builder, lhs.as_raw(), rhs.as_raw(), name.as_ptr()))
+            Value::from_raw(LLVMBuildAdd(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()))
         }
     }
 
-    pub fn and(&self, lhs: Value<'cid, 'fid, 'function>, rhs: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
+    pub fn and(&mut self, lhs: Value<'cid, 'fid, 'function>, rhs: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
         unsafe {
-            Value::from_raw(LLVMBuildAnd(self.llvm_builder, lhs.as_raw(), rhs.as_raw(), name.as_ptr()))
+            Value::from_raw(LLVMBuildAnd(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()))
         }
     }
 
-    pub fn mul(&self, lhs: Value<'cid, 'fid, 'function>, rhs: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
+    pub fn mul(&mut self, lhs: Value<'cid, 'fid, 'function>, rhs: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
         unsafe {
-            Value::from_raw(LLVMBuildMul(self.llvm_builder, lhs.as_raw(), rhs.as_raw(), name.as_ptr()))
+            Value::from_raw(LLVMBuildMul(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()))
         }
     }
 
-    pub fn neg(&self, value: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
+    pub fn neg(&mut self, value: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
         unsafe {
-            Value::from_raw(LLVMBuildNeg(self.llvm_builder, value.as_raw(), name.as_ptr()))
+            Value::from_raw(LLVMBuildNeg(self.as_raw(), value.as_raw(), name.as_ptr()))
         }
     }
 
-    pub fn not(&self, value: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
+    pub fn not(&mut self, value: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
         unsafe {
-            Value::from_raw(LLVMBuildNot(self.llvm_builder, value.as_raw(), name.as_ptr()))
+            Value::from_raw(LLVMBuildNot(self.as_raw(), value.as_raw(), name.as_ptr()))
         }
     }
 
-    pub fn ret(&self, value: Value<'cid, 'fid, 'function>) -> Value<'cid, 'fid, 'function> {
+    pub fn ret(&mut self, value: Value<'cid, 'fid, 'function>) -> Value<'cid, 'fid, 'function> {
         unsafe {
-            Value::from_raw(LLVMBuildRet(self.llvm_builder, value.as_raw()))
+            Value::from_raw(LLVMBuildRet(self.as_raw(), value.as_raw()))
         }
+    }
+
+    pub fn as_raw(&self) -> LLVMBuilderRef {
+        self as *const PositionedBuilder as *mut PositionedBuilder as LLVMBuilderRef
     }
 }
