@@ -7,6 +7,8 @@ pub use self::value::Value;
 pub use self::constant::Constant;
 pub use self::ty::Type;
 
+pub use llvm_sys::{LLVMIntPredicate, LLVMRealPredicate};
+
 pub mod context;
 pub mod module;
 pub mod function;

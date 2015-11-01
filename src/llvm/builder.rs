@@ -3,6 +3,7 @@ use std::marker::PhantomData;
 
 use llvm_sys::prelude::*;
 use llvm_sys::core::*;
+pub use llvm_sys::{LLVMIntPredicate, LLVMRealPredicate};
 
 use owned::{Owned, DropInPlace};
 
@@ -180,6 +181,18 @@ impl<'cid, 'context, 'fid, 'block> PositionedBuilder<'cid, 'context, 'fid, 'bloc
     pub fn not(&mut self, value: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
         unsafe {
             &*(LLVMBuildNot(self.as_raw(), value.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
+    pub fn icmp(&mut self, pred: LLVMIntPredicate, lhs: &Value<'cid, 'fid>, rhs: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+        unsafe {
+            &*(LLVMBuildICmp(self.as_raw(), pred, lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
+    pub fn fcmp(&mut self, pred: LLVMRealPredicate, lhs: &Value<'cid, 'fid>, rhs: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+        unsafe {
+            &*(LLVMBuildFCmp(self.as_raw(), pred, lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value)
         }
     }
 
