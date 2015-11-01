@@ -27,7 +27,7 @@ impl<'cid, 'context> Builder<'cid, 'context> {
         }
     }
 
-    pub fn position_at_end<'fid, 'function, 'builder>(&'builder mut self, block: &'function mut BasicBlock<'cid, 'fid>) -> &'builder mut PositionedBuilder<'cid, 'context, 'fid, 'function> {
+    pub fn position_at_end<'fid, 'block, 'builder>(&'builder mut self, block: &'block mut BasicBlock<'cid, 'fid>) -> &'builder mut PositionedBuilder<'cid, 'context, 'fid, 'block> {
         unsafe {
             LLVMPositionBuilderAtEnd(self.as_raw(), block.as_raw());
             &mut *(self as *mut Builder as *mut PositionedBuilder)
@@ -39,57 +39,57 @@ impl<'cid, 'context> Builder<'cid, 'context> {
     }
 }
 
-pub struct PositionedBuilder<'cid: 'context, 'context: 'function, 'fid: 'function, 'function> {
-    _block: PhantomData<&'function mut BasicBlock<'cid, 'fid>>,
+pub struct PositionedBuilder<'cid: 'context, 'context: 'block, 'fid: 'block, 'block> {
+    _block: PhantomData<&'block mut BasicBlock<'cid, 'fid>>,
     _builder: PhantomData<Builder<'cid, 'context>>
 }
 
-impl<'cid, 'context, 'fid, 'function> PositionedBuilder<'cid, 'context, 'fid, 'function> {
-    pub fn br(&mut self, target: &BasicBlock<'cid, 'fid>) -> Value<'cid, 'fid, 'function> {
+impl<'cid, 'context, 'fid, 'block> PositionedBuilder<'cid, 'context, 'fid, 'block> {
+    pub fn br(&mut self, target: &BasicBlock<'cid, 'fid>) -> &'block Value<'cid, 'fid> {
         unsafe {
-            Value::from_raw(LLVMBuildBr(self.as_raw(), target.as_raw()))
+            &*(LLVMBuildBr(self.as_raw(), target.as_raw()) as *const Value)
         }
     }
 
-    pub fn or(&mut self, lhs: Value<'cid, 'fid, 'function>, rhs: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
+    pub fn or(&mut self, lhs: &Value<'cid, 'fid>, rhs: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
         unsafe {
-            Value::from_raw(LLVMBuildOr(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()))
+            &*(LLVMBuildOr(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value)
         }
     }
 
-    pub fn add(&mut self, lhs: Value<'cid, 'fid, 'function>, rhs: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
+    pub fn add(&mut self, lhs: &Value<'cid, 'fid>, rhs: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
         unsafe {
-            Value::from_raw(LLVMBuildAdd(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()))
+            &*(LLVMBuildAdd(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value)
         }
     }
 
-    pub fn and(&mut self, lhs: Value<'cid, 'fid, 'function>, rhs: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
+    pub fn and(&mut self, lhs: &Value<'cid, 'fid>, rhs: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
         unsafe {
-            Value::from_raw(LLVMBuildAnd(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()))
+            &*(LLVMBuildAnd(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value)
         }
     }
 
-    pub fn mul(&mut self, lhs: Value<'cid, 'fid, 'function>, rhs: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
+    pub fn mul(&mut self, lhs: &Value<'cid, 'fid>, rhs: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
         unsafe {
-            Value::from_raw(LLVMBuildMul(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()))
+            &*(LLVMBuildMul(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value)
         }
     }
 
-    pub fn neg(&mut self, value: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
+    pub fn neg(&mut self, value: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
         unsafe {
-            Value::from_raw(LLVMBuildNeg(self.as_raw(), value.as_raw(), name.as_ptr()))
+            &*(LLVMBuildNeg(self.as_raw(), value.as_raw(), name.as_ptr()) as *const Value)
         }
     }
 
-    pub fn not(&mut self, value: Value<'cid, 'fid, 'function>, name: &CStr) -> Value<'cid, 'fid, 'function> {
+    pub fn not(&mut self, value: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
         unsafe {
-            Value::from_raw(LLVMBuildNot(self.as_raw(), value.as_raw(), name.as_ptr()))
+            &*(LLVMBuildNot(self.as_raw(), value.as_raw(), name.as_ptr()) as *const Value)
         }
     }
 
-    pub fn ret(&mut self, value: Value<'cid, 'fid, 'function>) -> Value<'cid, 'fid, 'function> {
+    pub fn ret(&mut self, value: &Value<'cid, 'fid>) -> &'block Value<'cid, 'fid> {
         unsafe {
-            Value::from_raw(LLVMBuildRet(self.as_raw(), value.as_raw()))
+            &*(LLVMBuildRet(self.as_raw(), value.as_raw()) as *const Value)
         }
     }
 

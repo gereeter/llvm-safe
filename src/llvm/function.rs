@@ -42,9 +42,9 @@ impl<'cid, 'mid, 'fid, 'function> FunctionBuilder<'cid, 'mid, 'fid, 'function> {
         }
     }
 
-    pub fn param(&self, index: u32) -> Value<'cid, 'fid, 'function> {
+    pub fn param(&self, index: u32) -> &'function Value<'cid, 'fid> {
         unsafe {
-            Value::from_raw(LLVMGetParam(self.inner.as_raw(), index))
+            &*(LLVMGetParam(self.inner.as_raw(), index) as *const Value)
         }
     }
 }
