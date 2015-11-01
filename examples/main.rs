@@ -8,7 +8,7 @@ fn main() {
     id::with(|context_id| {
         let context = llvm::Context::new(context_id);
         id::with(|module_id| {
-            let module = llvm::Module::new(module_id, &CString::new("mymodule").unwrap(), &context);
+            let mut module = llvm::Module::new(module_id, &CString::new("mymodule").unwrap(), &context);
 
             let i32_ty = llvm::Type::i32(&context);
             let func_ty = llvm::Type::function(&[i32_ty], i32_ty);

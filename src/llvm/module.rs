@@ -29,12 +29,10 @@ impl<'cid, 'context, 'mid> Module<'cid, 'context, 'mid> {
         }
     }
 
-    pub fn add_function<'module, 'fid>(&'module self, id: Id<'fid>, name: &CStr, ty: &Type<'cid>) -> Function<'cid, 'mid, 'module, 'fid> {
+    // TODO: use a ModuleBuilder?
+    pub fn add_function<'module, 'fid>(&'module mut self, _id: Id<'fid>, name: &CStr, ty: &Type<'cid>) -> &'module mut Function<'cid, 'mid, 'fid> {
         unsafe {
-            Function::from_raw(
-                id,
-                LLVMAddFunction(self.as_raw(), name.as_ptr(), ty.as_raw())
-            )
+            &mut *(LLVMAddFunction(self.as_raw(), name.as_ptr(), ty.as_raw()) as *mut Function)
         }
     }
 
