@@ -2,29 +2,28 @@ use llvm_sys::prelude::*;
 use llvm_sys::core::*;
 
 use id::Id;
+use owned::{Owned, DropInPlace};
 
 pub struct Context<'cid> {
-    _id: Id<'cid>,
-    llvm_context: LLVMContextRef
+    _id: Id<'cid>
 }
 
-impl<'cid> Drop for Context<'cid> {
-   fn drop(&mut self) {
-       unsafe {
-           LLVMContextDispose(self.llvm_context);
-       }
+impl<'cid> DropInPlace for Context<'cid> {
+   unsafe fn drop_in_place(&mut self) {
+       LLVMContextDispose(self.as_raw());
    }
 }
 
 impl<'cid> Context<'cid> {
-    pub fn new(id: Id<'cid>) -> Context<'cid> {
-        Context {
-            _id: id,
-            llvm_context: unsafe { LLVMContextCreate() }
+    pub fn new(_id: Id<'cid>) -> Owned<Context<'cid>> {
+        unsafe {
+            Owned::from_raw(
+                LLVMContextCreate() as *mut Context
+            )
         }
     }
 
     pub fn as_raw(&self) -> LLVMContextRef {
-        self.llvm_context
+        self as *const Context as *mut Context as LLVMContextRef
     }
 }

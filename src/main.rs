@@ -1,8 +1,11 @@
+#![feature(unique, core_intrinsics)]
+
 extern crate llvm_sys;
 
 use std::ffi::CString;
 
 mod id;
+mod owned;
 mod llvm;
 
 fn main() {
