@@ -6,7 +6,7 @@ use llvm_sys::core::*;
 
 use owned::{Owned, DropInPlace};
 
-use llvm::{Context, BasicBlock, Value};
+use llvm::{Context, BasicBlock, Value, Type};
 
 pub struct Builder<'cid: 'context, 'context> {
     _context: PhantomData<&'context Context<'cid>>
@@ -51,9 +51,9 @@ impl<'cid, 'context, 'fid, 'block> PositionedBuilder<'cid, 'context, 'fid, 'bloc
         }
     }
 
-    pub fn or(&mut self, lhs: &Value<'cid, 'fid>, rhs: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+    pub fn cond_br(&mut self, cond: &Value<'cid, 'fid>, then_block: &BasicBlock<'cid, 'fid>, else_block: &BasicBlock<'cid, 'fid>) -> &'block Value<'cid, 'fid> {
         unsafe {
-            &*(LLVMBuildOr(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value)
+            &*(LLVMBuildCondBr(self.as_raw(), cond.as_raw(), then_block.as_raw(), else_block.as_raw()) as *const Value)
         }
     }
 
@@ -63,9 +63,21 @@ impl<'cid, 'context, 'fid, 'block> PositionedBuilder<'cid, 'context, 'fid, 'bloc
         }
     }
 
-    pub fn and(&mut self, lhs: &Value<'cid, 'fid>, rhs: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+    pub fn fadd(&mut self, lhs: &Value<'cid, 'fid>, rhs: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
         unsafe {
-            &*(LLVMBuildAnd(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value)
+            &*(LLVMBuildFAdd(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
+    pub fn sub(&mut self, lhs: &Value<'cid, 'fid>, rhs: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+        unsafe {
+            &*(LLVMBuildSub(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
+    pub fn fsub(&mut self, lhs: &Value<'cid, 'fid>, rhs: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+        unsafe {
+            &*(LLVMBuildFSub(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value)
         }
     }
 
@@ -75,9 +87,93 @@ impl<'cid, 'context, 'fid, 'block> PositionedBuilder<'cid, 'context, 'fid, 'bloc
         }
     }
 
+    pub fn fmul(&mut self, lhs: &Value<'cid, 'fid>, rhs: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+        unsafe {
+            &*(LLVMBuildFMul(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
+    pub fn udiv(&mut self, lhs: &Value<'cid, 'fid>, rhs: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+        unsafe {
+            &*(LLVMBuildUDiv(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
+    pub fn sdiv(&mut self, lhs: &Value<'cid, 'fid>, rhs: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+        unsafe {
+            &*(LLVMBuildSDiv(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
+    pub fn fdiv(&mut self, lhs: &Value<'cid, 'fid>, rhs: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+        unsafe {
+            &*(LLVMBuildFDiv(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
+    pub fn urem(&mut self, lhs: &Value<'cid, 'fid>, rhs: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+        unsafe {
+            &*(LLVMBuildURem(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
+    pub fn srem(&mut self, lhs: &Value<'cid, 'fid>, rhs: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+        unsafe {
+            &*(LLVMBuildSRem(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
+    pub fn frem(&mut self, lhs: &Value<'cid, 'fid>, rhs: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+        unsafe {
+            &*(LLVMBuildFRem(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
+    pub fn shl(&mut self, lhs: &Value<'cid, 'fid>, rhs: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+        unsafe {
+            &*(LLVMBuildShl(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
+    pub fn lshr(&mut self, lhs: &Value<'cid, 'fid>, rhs: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+        unsafe {
+            &*(LLVMBuildLShr(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
+    pub fn ashr(&mut self, lhs: &Value<'cid, 'fid>, rhs: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+        unsafe {
+            &*(LLVMBuildAShr(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
+    pub fn and(&mut self, lhs: &Value<'cid, 'fid>, rhs: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+        unsafe {
+            &*(LLVMBuildAnd(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
+    pub fn or(&mut self, lhs: &Value<'cid, 'fid>, rhs: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+        unsafe {
+            &*(LLVMBuildOr(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
+    pub fn xor(&mut self, lhs: &Value<'cid, 'fid>, rhs: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+        unsafe {
+            &*(LLVMBuildXor(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
     pub fn neg(&mut self, value: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
         unsafe {
             &*(LLVMBuildNeg(self.as_raw(), value.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
+    pub fn fneg(&mut self, value: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+        unsafe {
+            &*(LLVMBuildFNeg(self.as_raw(), value.as_raw(), name.as_ptr()) as *const Value)
         }
     }
 
@@ -87,9 +183,39 @@ impl<'cid, 'context, 'fid, 'block> PositionedBuilder<'cid, 'context, 'fid, 'bloc
         }
     }
 
-    pub fn ret(&mut self, value: &Value<'cid, 'fid>) -> &'block Value<'cid, 'fid> {
+    pub fn alloca(&mut self, ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'fid> {
         unsafe {
-            &*(LLVMBuildRet(self.as_raw(), value.as_raw()) as *const Value)
+            &*(LLVMBuildAlloca(self.as_raw(), ty.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
+    pub fn array_alloca(&mut self, ty: &Type<'cid>, len: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+        unsafe {
+            &*(LLVMBuildArrayAlloca(self.as_raw(), ty.as_raw(), len.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
+    pub fn load(&mut self, ptr: &Value<'cid, 'fid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+        unsafe {
+            &*(LLVMBuildLoad(self.as_raw(), ptr.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
+    pub fn store(&mut self, value: &Value<'cid, 'fid>, ptr: &Value<'cid, 'fid>) {
+        unsafe {
+            LLVMBuildStore(self.as_raw(), value.as_raw(), ptr.as_raw());
+        }
+    }
+
+    pub fn ret(&mut self, value: &Value<'cid, 'fid>) {
+        unsafe {
+            LLVMBuildRet(self.as_raw(), value.as_raw());
+        }
+    }
+
+    pub fn ret_void(&mut self) {
+        unsafe {
+            LLVMBuildRetVoid(self.as_raw());
         }
     }
 
