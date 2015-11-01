@@ -5,7 +5,6 @@ use id::IdRef;
 
 use llvm::context::Context;
 
-#[derive(Copy, Clone)]
 pub struct Type<'cid> {
     _context_id: IdRef<'cid>
 }
