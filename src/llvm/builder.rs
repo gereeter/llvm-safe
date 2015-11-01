@@ -4,7 +4,6 @@ use std::marker::PhantomData;
 use llvm_sys::prelude::*;
 use llvm_sys::core::*;
 
-use id::IdRef;
 use owned::{Owned, DropInPlace};
 
 use llvm::{Context, BasicBlock, Value};

@@ -1,5 +1,3 @@
-use std::marker::PhantomData;
-
 use llvm_sys::prelude::*;
 
 use id::IdRef;

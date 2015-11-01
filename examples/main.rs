@@ -1,12 +1,8 @@
-#![feature(unique, core_intrinsics)]
-
-extern crate llvm_sys;
+extern crate compiler;
 
 use std::ffi::CString;
 
-mod id;
-mod owned;
-mod llvm;
+use compiler::{id, llvm};
 
 fn main() {
     id::with(|context_id| {
