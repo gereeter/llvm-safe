@@ -4,6 +4,7 @@ pub use self::function::Function;
 pub use self::builder::{Builder, PositionedBuilder};
 pub use self::block::BasicBlock;
 pub use self::value::Value;
+pub use self::phi::Phi;
 pub use self::constant::Constant;
 pub use self::ty::Type;
 
@@ -15,6 +16,7 @@ pub mod function;
 pub mod block;
 pub mod builder;
 pub mod value;
+pub mod phi;
 pub mod constant;
 pub mod ty;
 
