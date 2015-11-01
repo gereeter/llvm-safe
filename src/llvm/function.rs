@@ -17,15 +17,9 @@ pub struct Function<'cid, 'mid: 'module, 'module, 'fid> {
 }
 
 impl<'cid, 'mid: 'module, 'module, 'fid> Function<'cid, 'mid, 'module, 'fid> {
-    pub fn append_basic_block<'function>(&'function self, name: &CStr, context: &Context<'cid>) -> BasicBlock<'cid, 'fid, 'function> {
-        unsafe {
-            BasicBlock::from_raw(LLVMAppendBasicBlockInContext(context.as_raw(), self.llvm_function, name.as_ptr()))
-        }
-    }
-
-    pub fn param<'function>(&'function self, index: u32) -> Value<'cid, 'fid, 'function> {
-        unsafe {
-            Value::from_raw(LLVMGetParam(self.llvm_function, index))
+    pub fn builder<'function>(&'function mut self) -> FunctionBuilder<'cid, 'mid, 'module, 'fid, 'function> {
+        FunctionBuilder {
+            inner: self
         }
     }
 
@@ -42,6 +36,24 @@ impl<'cid, 'mid: 'module, 'module, 'fid> Function<'cid, 'mid, 'module, 'fid> {
             _module: PhantomData,
             _id: id,
             llvm_function: raw
+        }
+    }
+}
+
+pub struct FunctionBuilder<'cid: 'function, 'mid: 'module, 'module: 'function, 'fid: 'function, 'function> {
+    inner: &'function mut Function<'cid, 'mid, 'module, 'fid>
+}
+
+impl<'cid, 'mid, 'module, 'fid, 'function> FunctionBuilder<'cid, 'mid, 'module, 'fid, 'function> {
+    pub fn append_basic_block(&mut self, name: &CStr, context: &Context<'cid>) -> &'function mut BasicBlock<'cid, 'fid> {
+        unsafe {
+            &mut *(LLVMAppendBasicBlockInContext(context.as_raw(), self.inner.llvm_function, name.as_ptr()) as *mut BasicBlock)
+        }
+    }
+
+    pub fn param(&self, index: u32) -> Value<'cid, 'fid, 'function> {
+        unsafe {
+            Value::from_raw(LLVMGetParam(self.inner.llvm_function, index))
         }
     }
 }

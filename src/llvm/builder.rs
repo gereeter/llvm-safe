@@ -28,7 +28,7 @@ impl<'cid, 'context> Builder<'cid, 'context> {
         }
     }
 
-    pub fn position_at_end<'fid, 'function, 'builder>(&'builder mut self, block: BasicBlock<'cid, 'fid, 'function>) -> &'builder mut PositionedBuilder<'cid, 'context, 'fid, 'function> {
+    pub fn position_at_end<'fid, 'function, 'builder>(&'builder mut self, block: &'function mut BasicBlock<'cid, 'fid>) -> &'builder mut PositionedBuilder<'cid, 'context, 'fid, 'function> {
         unsafe {
             LLVMPositionBuilderAtEnd(self.as_raw(), block.as_raw());
             &mut *(self as *mut Builder as *mut PositionedBuilder)
@@ -40,14 +40,13 @@ impl<'cid, 'context> Builder<'cid, 'context> {
     }
 }
 
-pub struct PositionedBuilder<'cid: 'context, 'context, 'fid, 'function> {
-    _function_id: IdRef<'fid>,
-    _function: PhantomData<&'function ()>,
+pub struct PositionedBuilder<'cid: 'context, 'context: 'function, 'fid: 'function, 'function> {
+    _block: PhantomData<&'function mut BasicBlock<'cid, 'fid>>,
     _builder: PhantomData<Builder<'cid, 'context>>
 }
 
 impl<'cid, 'context, 'fid, 'function> PositionedBuilder<'cid, 'context, 'fid, 'function> {
-    pub fn br(&mut self, target: BasicBlock<'cid, 'fid, 'function>) -> Value<'cid, 'fid, 'function> {
+    pub fn br(&mut self, target: &BasicBlock<'cid, 'fid>) -> Value<'cid, 'fid, 'function> {
         unsafe {
             Value::from_raw(LLVMBuildBr(self.as_raw(), target.as_raw()))
         }
