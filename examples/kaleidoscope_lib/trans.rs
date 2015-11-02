@@ -8,7 +8,7 @@ use compiler::llvm::LLVMRealPredicate;
 
 use kaleidoscope_lib::ast;
 
-pub fn trans_expr<'cid: 'context, 'context: 'block, 'mid, 'module, 'fid, 'block>(expr: &ast::Expr, context: &'context Context<'cid>, module: &ModuleBuilder<'cid, 'context, 'mid, 'module>, builder: &mut PositionedBuilder<'cid, 'context, 'fid, 'block>, named_values: &HashMap<&str, &'block Value<'cid, 'fid>>) -> Result<&'block Value<'cid, 'fid>, &'static str> {
+pub fn trans_expr<'cid: 'context, 'context: 'block, 'module, 'fid, 'block>(expr: &ast::Expr, context: &'context Context<'cid>, module: &ModuleBuilder<'cid, 'context, 'module>, builder: &mut PositionedBuilder<'cid, 'context, 'fid, 'block>, named_values: &HashMap<&str, &'block Value<'cid, 'fid>>) -> Result<&'block Value<'cid, 'fid>, &'static str> {
     match *expr {
         ast::Expr::Number(value) => Ok(Constant::f64(value, context).as_value()),
         ast::Expr::Variable(ref name) => named_values.get(&**name).cloned().ok_or("Unknown name in trans"),
@@ -64,7 +64,7 @@ pub fn trans_expr<'cid: 'context, 'context: 'block, 'mid, 'module, 'fid, 'block>
     }
 }
 
-pub fn trans_proto<'cid: 'context, 'context: 'module, 'mid: 'module, 'module, 'fid>(proto: &ast::Prototype, id: Id<'fid>, context: &'context Context<'cid>, module: &mut ModuleBuilder<'cid, 'context, 'mid, 'module>) -> Result<&'module mut Function<'cid, 'mid, 'fid>, &'static str> {
+pub fn trans_proto<'cid: 'context, 'context: 'module, 'module, 'fid>(proto: &ast::Prototype, id: Id<'fid>, context: &'context Context<'cid>, module: &mut ModuleBuilder<'cid, 'context, 'module>) -> Result<&'module mut Function<'cid, 'fid>, &'static str> {
     let c_name = &CString::new(&*proto.name).unwrap();
     if module.get_named_function(&c_name).is_some() {
         return Err("Redefinition of already defined function");
@@ -84,7 +84,7 @@ pub fn trans_proto<'cid: 'context, 'context: 'module, 'mid: 'module, 'module, 'f
     Ok(function)
 }
 
-pub fn trans_func<'cid: 'context, 'context: 'module, 'mid: 'module, 'module, 'fid>(func: &ast::Function, id: Id<'fid>, context: &'context Context<'cid>, module: &mut ModuleBuilder<'cid, 'context, 'mid, 'module>, builder: &mut Builder<'cid, 'context>) -> Result<&'module mut Function<'cid, 'mid, 'fid>, &'static str> {
+pub fn trans_func<'cid: 'context, 'context: 'module, 'module, 'fid>(func: &ast::Function, id: Id<'fid>, context: &'context Context<'cid>, module: &mut ModuleBuilder<'cid, 'context, 'module>, builder: &mut Builder<'cid, 'context>) -> Result<&'module mut Function<'cid, 'fid>, &'static str> {
     let mut function = try!(trans_proto(&func.proto, id, context, module));
     {
         let mut function_builder = function.builder();

@@ -9,19 +9,18 @@ use owned::{Owned, DropInPlace};
 
 use llvm::{Context, Type, Function, FunctionLabel};
 
-pub struct Module<'cid: 'context, 'context, 'mid> {
-    _context: PhantomData<&'context Context<'cid>>,
-    _id: Id<'mid>
+pub struct Module<'cid: 'context, 'context> {
+    _context: PhantomData<&'context Context<'cid>>
 }
 
-impl<'cid, 'context, 'mid> DropInPlace for Module<'cid, 'context, 'mid> {
+impl<'cid, 'context> DropInPlace for Module<'cid, 'context> {
     unsafe fn drop_in_place(&mut self) {
         LLVMDisposeModule(self.as_raw());
     }
 }
 
-impl<'cid, 'context, 'mid> Module<'cid, 'context, 'mid> {
-    pub fn new(_id: Id<'mid>, name: &CStr, context: &'context Context<'cid>) -> Owned<Module<'cid, 'context, 'mid>> {
+impl<'cid, 'context> Module<'cid, 'context> {
+    pub fn new(name: &CStr, context: &'context Context<'cid>) -> Owned<Module<'cid, 'context>> {
         unsafe {
             Owned::from_raw(
                 LLVMModuleCreateWithNameInContext(name.as_ptr(), context.as_raw()) as *mut Module
@@ -29,7 +28,7 @@ impl<'cid, 'context, 'mid> Module<'cid, 'context, 'mid> {
         }
     }
 
-    pub fn builder<'module>(&'module mut self) -> ModuleBuilder<'cid, 'context, 'mid, 'module> {
+    pub fn builder<'module>(&'module mut self) -> ModuleBuilder<'cid, 'context, 'module> {
         ModuleBuilder {
             inner: self
         }
@@ -40,18 +39,18 @@ impl<'cid, 'context, 'mid> Module<'cid, 'context, 'mid> {
     }
 }
 
-pub struct ModuleBuilder<'cid: 'context, 'context: 'module, 'mid: 'module, 'module> {
-    inner: &'module mut Module<'cid, 'context, 'mid>
+pub struct ModuleBuilder<'cid: 'context, 'context: 'module, 'module> {
+    inner: &'module mut Module<'cid, 'context>
 }
 
-impl<'cid, 'context, 'mid, 'module> ModuleBuilder<'cid, 'context, 'mid, 'module> {
-    pub fn add_function<'fid, 'function>(&mut self, _id: Id<'fid>, name: &CStr, ty: &Type<'cid>) -> &'function mut Function<'cid, 'mid, 'fid> where 'module: 'function {
+impl<'cid, 'context, 'module> ModuleBuilder<'cid, 'context, 'module> {
+    pub fn add_function<'fid, 'function>(&mut self, _id: Id<'fid>, name: &CStr, ty: &Type<'cid>) -> &'function mut Function<'cid, 'fid> where 'module: 'function {
         unsafe {
             &mut *(LLVMAddFunction(self.inner.as_raw(), name.as_ptr(), ty.as_raw()) as *mut Function)
         }
     }
 
-    pub fn get_named_function(&self, name: &CStr) -> Option<&'module FunctionLabel<'cid, 'mid>> {
+    pub fn get_named_function(&self, name: &CStr) -> Option<&'module FunctionLabel<'cid>> {
         unsafe {
             let old = LLVMGetNamedFunction(self.inner.as_raw(), name.as_ptr());
             if old.is_null() {

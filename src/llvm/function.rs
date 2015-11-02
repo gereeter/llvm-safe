@@ -7,14 +7,13 @@ use id::{Id, IdRef};
 
 use llvm::{Context, BasicBlock, Label, Value};
 
-pub struct Function<'cid, 'mid, 'fid> {
+pub struct Function<'cid, 'fid> {
     _context_id: IdRef<'cid>,
-    _module_id: IdRef<'mid>,
     _id: Id<'fid>
 }
 
-impl<'cid, 'mid, 'fid> Function<'cid, 'mid, 'fid> {
-    pub fn builder<'function>(&'function mut self) -> FunctionBuilder<'cid, 'mid, 'fid, 'function> {
+impl<'cid, 'fid> Function<'cid, 'fid> {
+    pub fn builder<'function>(&'function mut self) -> FunctionBuilder<'cid, 'fid, 'function> {
         FunctionBuilder {
             inner: self
         }
@@ -31,11 +30,11 @@ impl<'cid, 'mid, 'fid> Function<'cid, 'mid, 'fid> {
     }
 }
 
-pub struct FunctionBuilder<'cid: 'function, 'mid: 'function, 'fid: 'function, 'function> {
-    inner: &'function mut Function<'cid, 'mid, 'fid>
+pub struct FunctionBuilder<'cid: 'function, 'fid: 'function, 'function> {
+    inner: &'function mut Function<'cid, 'fid>
 }
 
-impl<'cid, 'mid, 'fid, 'function> FunctionBuilder<'cid, 'mid, 'fid, 'function> {
+impl<'cid, 'fid, 'function> FunctionBuilder<'cid, 'fid, 'function> {
     pub fn append_basic_block(&mut self, name: &CStr, context: &Context<'cid>) -> (&'function Label<'cid, 'fid>, &'function mut BasicBlock<'cid, 'fid>) {
         unsafe {
             let bb_ref = LLVMAppendBasicBlockInContext(context.as_raw(), self.inner.as_raw(), name.as_ptr());
@@ -50,12 +49,11 @@ impl<'cid, 'mid, 'fid, 'function> FunctionBuilder<'cid, 'mid, 'fid, 'function> {
     }
 }
 
-pub struct FunctionLabel<'cid, 'mid> {
-    _context_id: IdRef<'cid>,
-    _module_id: IdRef<'mid>
+pub struct FunctionLabel<'cid> {
+    _context_id: IdRef<'cid>
 }
 
-impl<'cid, 'mid> FunctionLabel<'cid, 'mid> {
+impl<'cid> FunctionLabel<'cid> {
     pub fn as_raw(&self) -> LLVMValueRef {
         self as *const FunctionLabel as *mut FunctionLabel as LLVMValueRef
     }
