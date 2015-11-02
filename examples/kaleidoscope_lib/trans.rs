@@ -100,7 +100,7 @@ pub fn trans_func<'cid: 'context, 'context: 'module, 'module>(func: &ast::Functi
         Ok(())
     }));
 
-    // LLVMVerifyFunction(function, LLVMVerifierFailureAction::LLVMAbortProcessAction);
+    function.verify();
 
     Ok(function)
 }

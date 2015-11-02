@@ -2,6 +2,7 @@ use std::ffi::CStr;
 
 use llvm_sys::prelude::*;
 use llvm_sys::core::*;
+use llvm_sys::analysis::*;
 
 use id::{Id, IdRef};
 
@@ -16,6 +17,12 @@ impl<'cid> Function<'cid> {
         FunctionBuilder {
             inner: self,
             _id: id
+        }
+    }
+
+    pub fn verify(&self) {
+        unsafe {
+            LLVMVerifyFunction(self.as_raw(), LLVMVerifierFailureAction::LLVMAbortProcessAction);
         }
     }
 
