@@ -7,7 +7,7 @@ pub use llvm_sys::{LLVMIntPredicate, LLVMRealPredicate};
 
 use owned::{Owned, DropInPlace};
 
-use llvm::{Context, BasicBlock, Label, Value, Phi, Type};
+use llvm::{Context, BasicBlock, Label, Value, Phi, Type, FunctionLabel};
 
 pub struct Builder<'cid: 'context, 'context> {
     _context: PhantomData<&'context Context<'cid>>
@@ -277,6 +277,12 @@ impl<'cid, 'context, 'fid, 'block> PositionedBuilder<'cid, 'context, 'fid, 'bloc
     pub fn phi(&mut self, ty: &Type<'cid>, name: &CStr) -> &'block mut Phi<'cid, 'fid> {
         unsafe {
             &mut *(LLVMBuildPhi(self.as_raw(), ty.as_raw(), name.as_ptr()) as *mut Phi)
+        }
+    }
+
+    pub fn call<'mid>(&mut self, func: &FunctionLabel<'cid, 'mid>, args: &[&Value<'cid, 'fid>], name: &CStr) -> &'block Value<'cid, 'fid> {
+        unsafe {
+            &*(LLVMBuildCall(self.as_raw(), func.as_raw(), args.as_ptr() as *const LLVMValueRef as *mut LLVMValueRef, args.len() as u32, name.as_ptr()) as *const Value)
         }
     }
 

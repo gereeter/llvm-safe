@@ -49,3 +49,14 @@ impl<'cid, 'mid, 'fid, 'function> FunctionBuilder<'cid, 'mid, 'fid, 'function> {
         }
     }
 }
+
+pub struct FunctionLabel<'cid, 'mid> {
+    _context_id: IdRef<'cid>,
+    _module_id: IdRef<'mid>
+}
+
+impl<'cid, 'mid> FunctionLabel<'cid, 'mid> {
+    pub fn as_raw(&self) -> LLVMValueRef {
+        self as *const FunctionLabel as *mut FunctionLabel as LLVMValueRef
+    }
+}

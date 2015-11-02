@@ -16,6 +16,12 @@ impl<'cid> Constant<'cid> {
         }
     }
 
+    pub fn f64<'ctx>(value: f64, context: &'ctx Context<'cid>) -> &'ctx Constant<'cid> {
+        unsafe {
+            &*(LLVMConstReal(Type::f64(context).as_raw(), value) as *mut Constant)
+        }
+    }
+
     pub fn as_value<'fid>(&self) -> &Value<'cid, 'fid> {
         unsafe {
             &*(self.as_raw() as *mut Value)

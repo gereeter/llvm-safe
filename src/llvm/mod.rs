@@ -1,6 +1,6 @@
 pub use self::context::Context;
-pub use self::module::Module;
-pub use self::function::Function;
+pub use self::module::{Module, ModuleBuilder};
+pub use self::function::{Function, FunctionLabel};
 pub use self::builder::{Builder, PositionedBuilder};
 pub use self::block::{BasicBlock, Label};
 pub use self::value::Value;
