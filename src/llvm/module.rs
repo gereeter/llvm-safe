@@ -35,18 +35,6 @@ impl<'cid, 'context, 'mid> Module<'cid, 'context, 'mid> {
         }
     }
 
-    // TODO: eww
-    pub fn get_named_function_mut<'module, 'fid: 'module>(&'module mut self, id: Id<'fid>, name: &CStr) -> Result<(&'module mut Function<'cid, 'mid, 'fid>, ModuleBuilder<'cid, 'context, 'mid, 'module>), (Id<'fid>, &'module mut Module<'cid, 'context, 'mid>)> {
-        unsafe {
-            let old = LLVMGetNamedFunction(self.as_raw(), name.as_ptr());
-            if old.is_null() {
-                Err((id, self))
-            } else {
-                Ok((&mut *(old as *mut Function), self.builder()))
-            }
-        }
-    }
-
     pub fn as_raw(&self) -> LLVMModuleRef {
         self as *const Module as *mut Module as LLVMModuleRef
     }
@@ -63,7 +51,6 @@ impl<'cid, 'context, 'mid, 'module> ModuleBuilder<'cid, 'context, 'mid, 'module>
         }
     }
 
-    // TODO: eww
     pub fn get_named_function(&self, name: &CStr) -> Option<&'module FunctionLabel<'cid, 'mid>> {
         unsafe {
             let old = LLVMGetNamedFunction(self.inner.as_raw(), name.as_ptr());
