@@ -7,15 +7,15 @@ use id::{Id, IdRef};
 
 use llvm::{Context, BasicBlock, Label, Value};
 
-pub struct Function<'cid, 'fid> {
-    _context_id: IdRef<'cid>,
-    _id: Id<'fid>
+pub struct Function<'cid> {
+    _context_id: IdRef<'cid>
 }
 
-impl<'cid, 'fid> Function<'cid, 'fid> {
-    pub fn builder<'function>(&'function mut self) -> FunctionBuilder<'cid, 'fid, 'function> {
+impl<'cid> Function<'cid> {
+    pub fn builder<'fid, 'function>(&'function mut self, id: Id<'fid>) -> FunctionBuilder<'cid, 'fid, 'function> {
         FunctionBuilder {
-            inner: self
+            inner: self,
+            _id: id
         }
     }
 
@@ -30,8 +30,9 @@ impl<'cid, 'fid> Function<'cid, 'fid> {
     }
 }
 
-pub struct FunctionBuilder<'cid: 'function, 'fid: 'function, 'function> {
-    inner: &'function mut Function<'cid, 'fid>
+pub struct FunctionBuilder<'cid: 'function, 'fid, 'function> {
+    inner: &'function mut Function<'cid>,
+    _id: Id<'fid>
 }
 
 impl<'cid, 'fid, 'function> FunctionBuilder<'cid, 'fid, 'function> {

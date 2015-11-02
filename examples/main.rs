@@ -14,39 +14,39 @@ fn main() {
         let func_ty = llvm::Type::function(&[i32_ty], i32_ty);
         let mut builder = llvm::Builder::new(&context);
 
-        id::with(|function_id| {
-            let mut function = module_builder.add_function(function_id, &CString::new("square").unwrap(), func_ty);
-            {
-                let mut function_builder = function.builder();
+        {
+            let function = module_builder.add_function(&CString::new("square").unwrap(), func_ty);
+            id::with(|function_id| {
+                let mut function_builder = function.builder(function_id);
 
                 let (_, entry) = function_builder.append_basic_block(&CString::new("entry").unwrap(), &context);
                 let builder = builder.position_at_end(entry);
 
                 let ret = builder.mul(function_builder.param(0), function_builder.param(0), &CString::new("square").unwrap());
                 builder.ret(ret);
-            }
+            });
 
             function.dump();
-        });
+        }
 
-        id::with(|function_id| {
-            let mut function = module_builder.add_function(function_id, &CString::new("jumpy").unwrap(), func_ty);
-            {
-                let mut function_builder = function.builder();
+        {
+            let function = module_builder.add_function(&CString::new("jumpy").unwrap(), func_ty);
+            id::with(|function_id| {
+                let mut function_builder = function.builder(function_id);
                 let (_, entry) = function_builder.append_basic_block(&CString::new("entry").unwrap(), &context);
                 let (exit_label, exit) = function_builder.append_basic_block(&CString::new("exit").unwrap(), &context);
 
                 builder.position_at_end(entry).br(exit_label);
                 builder.position_at_end(exit).ret(function_builder.param(0));
-            }
+            });
 
             function.dump()
-        });
+        }
 
-        id::with(|function_id| {
-            let mut function = module_builder.add_function(function_id, &CString::new("consts").unwrap(), func_ty);
-            {
-                let mut function_builder = function.builder();
+        {
+            let function = module_builder.add_function(&CString::new("consts").unwrap(), func_ty);
+            id::with(|function_id| {
+                let mut function_builder = function.builder(function_id);
                 let (_, entry) = function_builder.append_basic_block(&CString::new("entry").unwrap(), &context);
                 let mut builder = builder.position_at_end(entry);
 
@@ -54,15 +54,15 @@ fn main() {
                 let xplus4 = builder.add(function_builder.param(0), llvm::Constant::i32(4, &context).as_value(), &CString::new("xplus4").unwrap());
                 let ret = builder.add(const_6, xplus4, &CString::new("final").unwrap());
                 builder.ret(ret);
-            }
+            });
 
             function.dump()
-        });
+        }
 
-        id::with(|function_id| {
-            let mut function = module_builder.add_function(function_id, &CString::new("abs").unwrap(), func_ty);
-            {
-                let mut function_builder = function.builder();
+        {
+            let function = module_builder.add_function(&CString::new("abs").unwrap(), func_ty);
+            id::with(|function_id| {
+                let mut function_builder = function.builder(function_id);
                 let (entry_label, entry) = function_builder.append_basic_block(&CString::new("entry").unwrap(), &context);
                 let (negative_label, negative) = function_builder.append_basic_block(&CString::new("negative").unwrap(), &context);
                 let (exit_label, exit) = function_builder.append_basic_block(&CString::new("exit").unwrap(), &context);
@@ -87,9 +87,9 @@ fn main() {
                     phi.add_incoming_branch(function_builder.param(0), entry_label);
                     builder.ret(phi.as_value());
                 }
-            }
+            });
 
             function.dump()
-        });
+        }
     });
 }

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::ffi::CString;
 use std::iter::repeat;
 
-use compiler::id::Id;
+use compiler::id;
 use compiler::llvm::{Context, ModuleBuilder, Builder, PositionedBuilder, Value, Constant, Type, Function};
 use compiler::llvm::LLVMRealPredicate;
 
@@ -64,7 +64,7 @@ pub fn trans_expr<'cid: 'context, 'context: 'block, 'module, 'fid, 'block>(expr:
     }
 }
 
-pub fn trans_proto<'cid: 'context, 'context: 'module, 'module, 'fid>(proto: &ast::Prototype, id: Id<'fid>, context: &'context Context<'cid>, module: &mut ModuleBuilder<'cid, 'context, 'module>) -> Result<&'module mut Function<'cid, 'fid>, &'static str> {
+pub fn trans_proto<'cid: 'context, 'context: 'module, 'module>(proto: &ast::Prototype, context: &'context Context<'cid>, module: &mut ModuleBuilder<'cid, 'context, 'module>) -> Result<&'module mut Function<'cid>, &'static str> {
     let c_name = &CString::new(&*proto.name).unwrap();
     if module.get_named_function(&c_name).is_some() {
         return Err("Redefinition of already defined function");
@@ -74,20 +74,22 @@ pub fn trans_proto<'cid: 'context, 'context: 'module, 'module, 'fid>(proto: &ast
     let arg_types = repeat(f64_type).take(proto.args.len()).collect::<Vec<_>>();
     let func_type = Type::function(&arg_types, f64_type);
 
-    let mut function = module.add_function(id, &c_name, func_type);
+    let mut function = module.add_function(&c_name, func_type);
 
     for (index, arg_name) in proto.args.iter().enumerate() {
         let c_arg_name = CString::new(&**arg_name).unwrap();
-        function.builder().param(index as u32).set_name(&c_arg_name);
+        id::with(|fid| {
+            function.builder(fid).param(index as u32).set_name(&c_arg_name);
+        });
     }
 
     Ok(function)
 }
 
-pub fn trans_func<'cid: 'context, 'context: 'module, 'module, 'fid>(func: &ast::Function, id: Id<'fid>, context: &'context Context<'cid>, module: &mut ModuleBuilder<'cid, 'context, 'module>, builder: &mut Builder<'cid, 'context>) -> Result<&'module mut Function<'cid, 'fid>, &'static str> {
-    let mut function = try!(trans_proto(&func.proto, id, context, module));
-    {
-        let mut function_builder = function.builder();
+pub fn trans_func<'cid: 'context, 'context: 'module, 'module>(func: &ast::Function, context: &'context Context<'cid>, module: &mut ModuleBuilder<'cid, 'context, 'module>, builder: &mut Builder<'cid, 'context>) -> Result<&'module mut Function<'cid>, &'static str> {
+    let mut function = try!(trans_proto(&func.proto, context, module));
+    try!(id::with(|function_id| {
+        let mut function_builder = function.builder(function_id);
         let named_values = func.proto.args.iter().enumerate().map(|(index, name)| (&**name, function_builder.param(index as u32))).collect();
         let entry_name = CString::new("entry").unwrap();
         let (_, entry_bb) = function_builder.append_basic_block(&entry_name, context);
@@ -95,7 +97,9 @@ pub fn trans_func<'cid: 'context, 'context: 'module, 'module, 'fid>(func: &ast::
 
         let ret_val = try!(trans_expr(&func.body, context, module, builder, &named_values));
         builder.ret(ret_val);
-    }
+
+        Ok(())
+    }));
 
     // LLVMVerifyFunction(function, LLVMVerifierFailureAction::LLVMAbortProcessAction);
 

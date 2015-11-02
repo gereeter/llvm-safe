@@ -4,7 +4,6 @@ use std::marker::PhantomData;
 use llvm_sys::prelude::*;
 use llvm_sys::core::*;
 
-use id::Id;
 use owned::{Owned, DropInPlace};
 
 use llvm::{Context, Type, Function, FunctionLabel};
@@ -44,7 +43,7 @@ pub struct ModuleBuilder<'cid: 'context, 'context: 'module, 'module> {
 }
 
 impl<'cid, 'context, 'module> ModuleBuilder<'cid, 'context, 'module> {
-    pub fn add_function<'fid, 'function>(&mut self, _id: Id<'fid>, name: &CStr, ty: &Type<'cid>) -> &'function mut Function<'cid, 'fid> where 'module: 'function {
+    pub fn add_function<'function>(&mut self, name: &CStr, ty: &Type<'cid>) -> &'function mut Function<'cid> where 'module: 'function {
         unsafe {
             &mut *(LLVMAddFunction(self.inner.as_raw(), name.as_ptr(), ty.as_raw()) as *mut Function)
         }
