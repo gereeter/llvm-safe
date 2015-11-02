@@ -45,7 +45,7 @@ pub struct ModuleBuilder<'cid: 'context, 'context: 'module, 'mid: 'module, 'modu
 }
 
 impl<'cid, 'context, 'mid, 'module> ModuleBuilder<'cid, 'context, 'mid, 'module> {
-    pub fn add_function<'fid>(&mut self, _id: Id<'fid>, name: &CStr, ty: &Type<'cid>) -> &'module mut Function<'cid, 'mid, 'fid> {
+    pub fn add_function<'fid, 'function>(&mut self, _id: Id<'fid>, name: &CStr, ty: &Type<'cid>) -> &'function mut Function<'cid, 'mid, 'fid> where 'module: 'function {
         unsafe {
             &mut *(LLVMAddFunction(self.inner.as_raw(), name.as_ptr(), ty.as_raw()) as *mut Function)
         }

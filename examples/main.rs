@@ -9,13 +9,14 @@ fn main() {
         let context = llvm::Context::new(context_id);
         id::with(|module_id| {
             let mut module = llvm::Module::new(module_id, &CString::new("mymodule").unwrap(), &context);
+            let mut module_builder = module.builder();
 
             let i32_ty = llvm::Type::i32(&context);
             let func_ty = llvm::Type::function(&[i32_ty], i32_ty);
             let mut builder = llvm::Builder::new(&context);
 
             id::with(|function_id| {
-                let mut function = module.builder().add_function(function_id, &CString::new("square").unwrap(), func_ty);
+                let mut function = module_builder.add_function(function_id, &CString::new("square").unwrap(), func_ty);
                 {
                     let mut function_builder = function.builder();
 
@@ -30,7 +31,7 @@ fn main() {
             });
 
             id::with(|function_id| {
-                let mut function = module.builder().add_function(function_id, &CString::new("jumpy").unwrap(), func_ty);
+                let mut function = module_builder.add_function(function_id, &CString::new("jumpy").unwrap(), func_ty);
                 {
                     let mut function_builder = function.builder();
                     let (_, entry) = function_builder.append_basic_block(&CString::new("entry").unwrap(), &context);
@@ -44,7 +45,7 @@ fn main() {
             });
 
             id::with(|function_id| {
-                let mut function = module.builder().add_function(function_id, &CString::new("consts").unwrap(), func_ty);
+                let mut function = module_builder.add_function(function_id, &CString::new("consts").unwrap(), func_ty);
                 {
                     let mut function_builder = function.builder();
                     let (_, entry) = function_builder.append_basic_block(&CString::new("entry").unwrap(), &context);
@@ -60,7 +61,7 @@ fn main() {
             });
 
             id::with(|function_id| {
-                let mut function = module.builder().add_function(function_id, &CString::new("abs").unwrap(), func_ty);
+                let mut function = module_builder.add_function(function_id, &CString::new("abs").unwrap(), func_ty);
                 {
                     let mut function_builder = function.builder();
                     let (entry_label, entry) = function_builder.append_basic_block(&CString::new("entry").unwrap(), &context);
