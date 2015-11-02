@@ -21,7 +21,7 @@ pub fn parse_identifier_expr<I: Iterator<Item=Token>>(iter: &mut Peekable<I>) ->
                 
                 if iter.peek() == Some(&Token::Other(')')) {
                     break;
-                } else if iter.peek() != Some(&Token::Other(',')) {
+                } else if iter.next() != Some(Token::Other(',')) {
                     return Err("Expected ')' or ',' in argument list")
                 }
             }

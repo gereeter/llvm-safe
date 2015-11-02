@@ -55,6 +55,12 @@ pub struct FunctionLabel<'cid> {
 }
 
 impl<'cid> FunctionLabel<'cid> {
+    pub fn num_args(&self) -> usize {
+        unsafe {
+            LLVMCountParams(self.as_raw()) as usize
+        }
+    }
+
     pub fn as_raw(&self) -> LLVMValueRef {
         self as *const FunctionLabel as *mut FunctionLabel as LLVMValueRef
     }

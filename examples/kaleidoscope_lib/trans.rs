@@ -48,10 +48,9 @@ pub fn trans_expr<'cid: 'context, 'context: 'block, 'module, 'fid, 'block>(expr:
             let c_name = CString::new(&**name).unwrap();
             match module.get_named_function(&c_name) {
                 Some(func) => {
-//                  let num_args = LLVMCountParams(func) as usize;
-//                  if num_args != args.len() {
-//                      return Err("Calling function with incorrect arity");
-//                  }
+                    if func.num_args() != args.len() {
+                        return Err("Calling function with incorrect arity");
+                    }
 
                     let arg_vals = args.iter().map(|arg| trans_expr(arg, context, module, builder, named_values).unwrap()).collect::<Vec<_>>();
 
