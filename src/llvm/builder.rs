@@ -196,6 +196,60 @@ impl<'cid, 'context, 'fid, 'block> PositionedBuilder<'cid, 'context, 'fid, 'bloc
         }
     }
 
+    pub fn trunc(&mut self, value: &Value<'cid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+        unsafe {
+            &*(LLVMBuildTrunc(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
+    pub fn fp_trunc(&mut self, value: &Value<'cid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+        unsafe {
+            &*(LLVMBuildFPTrunc(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
+    pub fn zext(&mut self, value: &Value<'cid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+        unsafe {
+            &*(LLVMBuildZExt(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
+    pub fn sext(&mut self, value: &Value<'cid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+        unsafe {
+            &*(LLVMBuildSExt(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
+    pub fn fp_ext(&mut self, value: &Value<'cid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+        unsafe {
+            &*(LLVMBuildFPExt(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
+    pub fn fp_to_ui(&mut self, value: &Value<'cid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+        unsafe {
+            &*(LLVMBuildFPToUI(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
+    pub fn fp_to_si(&mut self, value: &Value<'cid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+        unsafe {
+            &*(LLVMBuildFPToSI(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
+    pub fn ui_to_fp(&mut self, value: &Value<'cid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+        unsafe {
+            &*(LLVMBuildUIToFP(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
+    pub fn si_to_fp(&mut self, value: &Value<'cid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'fid> {
+        unsafe {
+            &*(LLVMBuildSIToFP(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
     pub fn alloca(&mut self, ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'fid> {
         unsafe {
             &*(LLVMBuildAlloca(self.as_raw(), ty.as_raw(), name.as_ptr()) as *const Value)
