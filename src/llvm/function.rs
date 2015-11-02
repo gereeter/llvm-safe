@@ -5,7 +5,7 @@ use llvm_sys::core::*;
 
 use id::{Id, IdRef};
 
-use llvm::{Context, BasicBlock, Value};
+use llvm::{Context, BasicBlock, Label, Value};
 
 pub struct Function<'cid, 'mid, 'fid> {
     _context_id: IdRef<'cid>,
@@ -36,9 +36,10 @@ pub struct FunctionBuilder<'cid: 'function, 'mid: 'function, 'fid: 'function, 'f
 }
 
 impl<'cid, 'mid, 'fid, 'function> FunctionBuilder<'cid, 'mid, 'fid, 'function> {
-    pub fn append_basic_block(&mut self, name: &CStr, context: &Context<'cid>) -> &'function mut BasicBlock<'cid, 'fid> {
+    pub fn append_basic_block(&mut self, name: &CStr, context: &Context<'cid>) -> (&'function Label<'cid, 'fid>, &'function mut BasicBlock<'cid, 'fid>) {
         unsafe {
-            &mut *(LLVMAppendBasicBlockInContext(context.as_raw(), self.inner.as_raw(), name.as_ptr()) as *mut BasicBlock)
+            let bb_ref = LLVMAppendBasicBlockInContext(context.as_raw(), self.inner.as_raw(), name.as_ptr());
+            (&*(bb_ref as *mut Label), &mut *(bb_ref as *mut BasicBlock))
         }
     }
 

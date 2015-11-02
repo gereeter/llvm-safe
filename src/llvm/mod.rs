@@ -2,7 +2,7 @@ pub use self::context::Context;
 pub use self::module::Module;
 pub use self::function::Function;
 pub use self::builder::{Builder, PositionedBuilder};
-pub use self::block::BasicBlock;
+pub use self::block::{BasicBlock, Label};
 pub use self::value::Value;
 pub use self::phi::Phi;
 pub use self::constant::Constant;

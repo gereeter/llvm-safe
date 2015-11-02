@@ -7,7 +7,7 @@ pub use llvm_sys::{LLVMIntPredicate, LLVMRealPredicate};
 
 use owned::{Owned, DropInPlace};
 
-use llvm::{Context, BasicBlock, Value, Phi, Type};
+use llvm::{Context, BasicBlock, Label, Value, Phi, Type};
 
 pub struct Builder<'cid: 'context, 'context> {
     _context: PhantomData<&'context Context<'cid>>
@@ -46,13 +46,13 @@ pub struct PositionedBuilder<'cid: 'context, 'context: 'block, 'fid: 'block, 'bl
 }
 
 impl<'cid, 'context, 'fid, 'block> PositionedBuilder<'cid, 'context, 'fid, 'block> {
-    pub fn br(&mut self, target: &BasicBlock<'cid, 'fid>) -> &'block Value<'cid, 'fid> {
+    pub fn br(&mut self, target: &Label<'cid, 'fid>) -> &'block Value<'cid, 'fid> {
         unsafe {
             &*(LLVMBuildBr(self.as_raw(), target.as_raw()) as *const Value)
         }
     }
 
-    pub fn cond_br(&mut self, cond: &Value<'cid, 'fid>, then_block: &BasicBlock<'cid, 'fid>, else_block: &BasicBlock<'cid, 'fid>) -> &'block Value<'cid, 'fid> {
+    pub fn cond_br(&mut self, cond: &Value<'cid, 'fid>, then_block: &Label<'cid, 'fid>, else_block: &Label<'cid, 'fid>) -> &'block Value<'cid, 'fid> {
         unsafe {
             &*(LLVMBuildCondBr(self.as_raw(), cond.as_raw(), then_block.as_raw(), else_block.as_raw()) as *const Value)
         }
@@ -220,9 +220,9 @@ impl<'cid, 'context, 'fid, 'block> PositionedBuilder<'cid, 'context, 'fid, 'bloc
         }
     }
 
-    pub fn phi(&mut self, ty: &Type<'cid>, name: &CStr) -> &'block Phi<'cid, 'fid> {
+    pub fn phi(&mut self, ty: &Type<'cid>, name: &CStr) -> &'block mut Phi<'cid, 'fid> {
         unsafe {
-            &*(LLVMBuildPhi(self.as_raw(), ty.as_raw(), name.as_ptr()) as *const Phi)
+            &mut *(LLVMBuildPhi(self.as_raw(), ty.as_raw(), name.as_ptr()) as *mut Phi)
         }
     }
 

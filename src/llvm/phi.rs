@@ -3,7 +3,7 @@ use llvm_sys::core::*;
 
 use id::IdRef;
 
-use llvm::{BasicBlock, Value};
+use llvm::{Label, Value};
 
 pub struct Phi<'cid, 'fid> {
     _context_id: IdRef<'cid>,
@@ -12,7 +12,7 @@ pub struct Phi<'cid, 'fid> {
 
 impl<'cid, 'fid> Phi<'cid, 'fid> {
     // TODO: Expose bulk addition?
-    pub fn add_incoming_branch(&mut self, value: &Value<'cid, 'fid>, block: &BasicBlock<'cid, 'fid>) {
+    pub fn add_incoming_branch(&mut self, value: &Value<'cid, 'fid>, block: &Label<'cid, 'fid>) {
         unsafe {
             LLVMAddIncoming(self.as_raw(), [value.as_raw()].as_mut_ptr(), [block.as_raw()].as_mut_ptr(), 1);
         }
