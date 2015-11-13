@@ -19,7 +19,7 @@ mod trans;
 fn handle_definition<'cid: 'context, 'context, I: Iterator<Item=Token>>(iter: &mut Peekable<I>, context: &'context Context<'cid>, module: &mut Module<'cid, 'context>, builder: &mut Builder<'cid, 'context>) {
     match parse_definition(iter) {
         Ok(def) => {
-            match trans::trans_func(&def, context, &mut module.builder(), builder) {
+            match trans::Context::new(context, module.builder()).trans_func(&def, builder) {
                 Ok(function) => {
                     println!("Read a function definition:");
                     function.dump();
@@ -34,7 +34,7 @@ fn handle_definition<'cid: 'context, 'context, I: Iterator<Item=Token>>(iter: &m
 fn handle_extern<'cid: 'context, 'context, I: Iterator<Item=Token>>(iter: &mut Peekable<I>, context: &'context Context<'cid>, module: &mut Module<'cid, 'context>) {
     match parse_extern(iter) {
         Ok(proto) => {
-            match trans::trans_proto(&proto, context, &mut module.builder()) {
+            match trans::Context::new(context, module.builder()).trans_proto(&proto) {
                 Ok(function) => {
                     println!("Read an extern:");
                     function.dump();
@@ -49,7 +49,7 @@ fn handle_extern<'cid: 'context, 'context, I: Iterator<Item=Token>>(iter: &mut P
 fn handle_top_level_expr<'cid: 'context, 'context, I: Iterator<Item=Token>>(iter: &mut Peekable<I>, context: &'context Context<'cid>, module: &mut Module<'cid, 'context>, builder: &mut Builder<'cid, 'context>) {
     match parse_top_level_expr(iter) {
         Ok(def) => {
-            match trans::trans_func(&def, context, &mut module.builder(), builder) {
+            match trans::Context::new(context, module.builder()).trans_func(&def, builder) {
                 Ok(function) => {
                     println!("Read a top level expression:");
                     function.dump();
