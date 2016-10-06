@@ -31,18 +31,10 @@ impl<'cid, 'context, 'module> Context<'cid, 'context, 'module> {
                 let rhs_val = try!(self.trans_expr(rhs, fbuilder, builder, named_values));
 
                 match op {
-                    '+' => {
-                        Ok(builder.fadd(lhs_val, rhs_val, const_cstr!("addtmp").as_cstr()))
-                    },
-                    '-' => {
-                        Ok(builder.fsub(lhs_val, rhs_val, const_cstr!("subtmp").as_cstr()))
-                    },
-                    '*' => {
-                        Ok(builder.fmul(lhs_val, rhs_val, const_cstr!("multmp").as_cstr()))
-                    },
-                    '/' => {
-                        Ok(builder.fdiv(lhs_val, rhs_val, const_cstr!("divtmp").as_cstr()))
-                    },
+                    '+' => Ok(builder.fadd(lhs_val, rhs_val, const_cstr!("addtmp").as_cstr())),
+                    '-' => Ok(builder.fsub(lhs_val, rhs_val, const_cstr!("subtmp").as_cstr())),
+                    '*' => Ok(builder.fmul(lhs_val, rhs_val, const_cstr!("multmp").as_cstr())),
+                    '/' => Ok(builder.fdiv(lhs_val, rhs_val, const_cstr!("divtmp").as_cstr())),
                     '<' => {
                         let cmp = builder.fcmp(LLVMRealPredicate::LLVMRealULT, lhs_val, rhs_val, const_cstr!("cmptmp").as_cstr());
                         Ok(builder.ui_to_fp(cmp, Type::f64(self.context), const_cstr!("convtmp").as_cstr()))
