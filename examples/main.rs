@@ -1,13 +1,12 @@
 extern crate compiler;
-
-use std::ffi::CString;
+#[macro_use] extern crate const_cstr;
 
 use compiler::{id, llvm};
 
 fn main() {
     id::with(|context_id| {
         let context = llvm::Context::new(context_id);
-        let mut module = llvm::Module::new(&CString::new("mymodule").unwrap(), &context);
+        let mut module = llvm::Module::new(const_cstr!("mymodule").as_cstr(), &context);
         let mut module_builder = module.builder();
 
         let i32_ty = llvm::Type::i32(&context);
@@ -15,14 +14,14 @@ fn main() {
         let mut builder = llvm::Builder::new(&context);
 
         {
-            let function = module_builder.add_function(&CString::new("square").unwrap(), func_ty);
+            let function = module_builder.add_function(const_cstr!("square").as_cstr(), func_ty);
             id::with(|function_id| {
                 let mut function_builder = function.builder(function_id);
 
-                let (_, entry) = function_builder.append_basic_block(&CString::new("entry").unwrap(), &context);
+                let (_, entry) = function_builder.append_basic_block(const_cstr!("entry").as_cstr(), &context);
                 let builder = builder.position_at_end(entry);
 
-                let ret = builder.mul(function_builder.param(0), function_builder.param(0), &CString::new("square").unwrap());
+                let ret = builder.mul(function_builder.param(0), function_builder.param(0), const_cstr!("square").as_cstr());
                 builder.ret(ret);
             });
 
@@ -30,11 +29,11 @@ fn main() {
         }
 
         {
-            let function = module_builder.add_function(&CString::new("jumpy").unwrap(), func_ty);
+            let function = module_builder.add_function(const_cstr!("jumpy").as_cstr(), func_ty);
             id::with(|function_id| {
                 let mut function_builder = function.builder(function_id);
-                let (_, entry) = function_builder.append_basic_block(&CString::new("entry").unwrap(), &context);
-                let (exit_label, exit) = function_builder.append_basic_block(&CString::new("exit").unwrap(), &context);
+                let (_, entry) = function_builder.append_basic_block(const_cstr!("entry").as_cstr(), &context);
+                let (exit_label, exit) = function_builder.append_basic_block(const_cstr!("exit").as_cstr(), &context);
 
                 builder.position_at_end(entry).br(exit_label);
                 builder.position_at_end(exit).ret(function_builder.param(0));
@@ -44,15 +43,15 @@ fn main() {
         }
 
         {
-            let function = module_builder.add_function(&CString::new("consts").unwrap(), func_ty);
+            let function = module_builder.add_function(const_cstr!("consts").as_cstr(), func_ty);
             id::with(|function_id| {
                 let mut function_builder = function.builder(function_id);
-                let (_, entry) = function_builder.append_basic_block(&CString::new("entry").unwrap(), &context);
+                let (_, entry) = function_builder.append_basic_block(const_cstr!("entry").as_cstr(), &context);
                 let mut builder = builder.position_at_end(entry);
 
-                let const_6 = builder.mul(llvm::Constant::i32(2, &context).as_value(), llvm::Constant::i32(3, &context).as_value(), &CString::new("const_6").unwrap());
-                let xplus4 = builder.add(function_builder.param(0), llvm::Constant::i32(4, &context).as_value(), &CString::new("xplus4").unwrap());
-                let ret = builder.add(const_6, xplus4, &CString::new("final").unwrap());
+                let const_6 = builder.mul(llvm::Constant::i32(2, &context).as_value(), llvm::Constant::i32(3, &context).as_value(), const_cstr!("const_6").as_cstr());
+                let xplus4 = builder.add(function_builder.param(0), llvm::Constant::i32(4, &context).as_value(), const_cstr!("xplus4").as_cstr());
+                let ret = builder.add(const_6, xplus4, const_cstr!("final").as_cstr());
                 builder.ret(ret);
             });
 
@@ -60,29 +59,29 @@ fn main() {
         }
 
         {
-            let function = module_builder.add_function(&CString::new("abs").unwrap(), func_ty);
+            let function = module_builder.add_function(const_cstr!("abs").as_cstr(), func_ty);
             id::with(|function_id| {
                 let mut function_builder = function.builder(function_id);
-                let (entry_label, entry) = function_builder.append_basic_block(&CString::new("entry").unwrap(), &context);
-                let (negative_label, negative) = function_builder.append_basic_block(&CString::new("negative").unwrap(), &context);
-                let (exit_label, exit) = function_builder.append_basic_block(&CString::new("exit").unwrap(), &context);
+                let (entry_label, entry) = function_builder.append_basic_block(const_cstr!("entry").as_cstr(), &context);
+                let (negative_label, negative) = function_builder.append_basic_block(const_cstr!("negative").as_cstr(), &context);
+                let (exit_label, exit) = function_builder.append_basic_block(const_cstr!("exit").as_cstr(), &context);
 
                 {
                     let mut builder = builder.position_at_end(entry);
-                    let cmp = builder.icmp(llvm::LLVMIntPredicate::LLVMIntSLT, function_builder.param(0), llvm::Constant::i32(0, &context).as_value(), &CString::new("isneg").unwrap());
+                    let cmp = builder.icmp(llvm::LLVMIntPredicate::LLVMIntSLT, function_builder.param(0), llvm::Constant::i32(0, &context).as_value(), const_cstr!("isneg").as_cstr());
                     builder.cond_br(cmp, negative_label, exit_label);
                 }
 
                 let negated = {
                     let mut builder = builder.position_at_end(negative);
-                    let negated = builder.neg(function_builder.param(0), &CString::new("negated").unwrap());
+                    let negated = builder.neg(function_builder.param(0), const_cstr!("negated").as_cstr());
                     builder.br(exit_label);
                     negated
                 };
 
                 {
                     let mut builder = builder.position_at_end(exit);
-                    let mut phi = builder.phi(i32_ty, &CString::new("phi").unwrap());
+                    let mut phi = builder.phi(i32_ty, const_cstr!("phi").as_cstr());
                     phi.add_incoming_branch(negated, negative_label);
                     phi.add_incoming_branch(function_builder.param(0), entry_label);
                     builder.ret(phi.as_value());

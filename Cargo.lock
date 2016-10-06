@@ -2,6 +2,7 @@
 name = "compiler"
 version = "0.1.0"
 dependencies = [
+ "const-cstr 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "llvm-sys 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -18,6 +19,14 @@ dependencies = [
 name = "bitflags"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "const-cstr"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "libc 0.1.12 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
 [[package]]
 name = "gcc"
@@ -59,3 +68,13 @@ name = "winapi-build"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
+[metadata]
+"checksum advapi32-sys 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "307c92332867e586720c0222ee9d890bbe8431711efed8a1b06bc5b40fc66bd7"
+"checksum bitflags 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)" = "65fee84cb17ca0b1f86b3870caad42a966b58366caed5a1651c6eb7f415ac545"
+"checksum const-cstr 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "2e950b379a7f9c5a83d43257fa1df616689141f326b4fc3bfb7aa7f3c7bc44d2"
+"checksum gcc 0.3.19 (registry+https://github.com/rust-lang/crates.io-index)" = "7c4709c32c47168f5fdf6fcece04b283931fc071b713435bff40d67b5f0b5d5d"
+"checksum libc 0.1.12 (registry+https://github.com/rust-lang/crates.io-index)" = "e32a70cf75e5846d53a673923498228bbec6a8624708a9ea5645f075d6276122"
+"checksum llvm-sys 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "e5e8322ae48d7a8831627ca58aeb0601f97d7e4119d6c733118c4a3ea2c04e29"
+"checksum semver 0.1.20 (registry+https://github.com/rust-lang/crates.io-index)" = "d4f410fedcf71af0345d7607d246e7ad15faaadd49d240ee3b24e5dc21a820ac"
+"checksum winapi 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)" = "5350e40d908c7e8b9e5c9edb541ca47cc617c6229d3575a46da6f550f36c96fd"
+"checksum winapi-build 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "2d315eee3b34aca4797b2da6b13ed88266e6d612562a0c46390af8299fc699bc"

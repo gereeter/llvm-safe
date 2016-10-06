@@ -32,28 +32,24 @@ impl<'cid, 'context, 'module> Context<'cid, 'context, 'module> {
 
                 match op {
                     '+' => {
-                        let name = CString::new("addtmp").unwrap();
-                        Ok(builder.fadd(lhs_val, rhs_val, &name))
+                        Ok(builder.fadd(lhs_val, rhs_val, const_cstr!("addtmp").as_cstr()))
                     },
                     '-' => {
-                        let name = CString::new("subtmp").unwrap();
-                        Ok(builder.fsub(lhs_val, rhs_val, &name))
+                        Ok(builder.fsub(lhs_val, rhs_val, const_cstr!("subtmp").as_cstr()))
                     },
                     '*' => {
-                        let name = CString::new("multmp").unwrap();
-                        Ok(builder.fmul(lhs_val, rhs_val, &name))
+                        Ok(builder.fmul(lhs_val, rhs_val, const_cstr!("multmp").as_cstr()))
                     },
                     '/' => {
-                        let name = CString::new("divtmp").unwrap();
-                        Ok(builder.fdiv(lhs_val, rhs_val, &name))
+                        Ok(builder.fdiv(lhs_val, rhs_val, const_cstr!("divtmp").as_cstr()))
                     },
                     '<' => {
-                        let cmp = builder.fcmp(LLVMRealPredicate::LLVMRealULT, lhs_val, rhs_val, &CString::new("cmptmp").unwrap());
-                        Ok(builder.ui_to_fp(cmp, Type::f64(&self.context), &CString::new("convtmp").unwrap()))
+                        let cmp = builder.fcmp(LLVMRealPredicate::LLVMRealULT, lhs_val, rhs_val, const_cstr!("cmptmp").as_cstr());
+                        Ok(builder.ui_to_fp(cmp, Type::f64(&self.context), const_cstr!("convtmp").as_cstr()))
                     },
                     '>' => {
-                        let cmp = builder.fcmp(LLVMRealPredicate::LLVMRealUGT, lhs_val, rhs_val, &CString::new("cmptmp").unwrap());
-                        Ok(builder.ui_to_fp(cmp, Type::f64(&self.context), &CString::new("convtmp").unwrap()))
+                        let cmp = builder.fcmp(LLVMRealPredicate::LLVMRealUGT, lhs_val, rhs_val, const_cstr!("cmptmp").as_cstr());
+                        Ok(builder.ui_to_fp(cmp, Type::f64(&self.context), const_cstr!("convtmp").as_cstr()))
                     },
                     _ => Err("Unknown operation in trans")
                 }
@@ -68,8 +64,7 @@ impl<'cid, 'context, 'module> Context<'cid, 'context, 'module> {
 
                         let arg_vals = args.iter().map(|arg| self.trans_expr(arg, builder, named_values).unwrap()).collect::<Vec<_>>();
 
-                        let calltmp_name = CString::new("calltmp").unwrap();
-                        Ok(builder.call(func, &arg_vals, &calltmp_name))
+                        Ok(builder.call(func, &arg_vals, const_cstr!("calltmp").as_cstr()))
                     },
                      None => Err("Calling function that does not exist")
                 }
@@ -104,8 +99,7 @@ impl<'cid, 'context, 'module> Context<'cid, 'context, 'module> {
         try!(id::with(|function_id| {
             let mut function_builder = function.builder(function_id);
             let named_values = func.proto.args.iter().enumerate().map(|(index, name)| (&**name, function_builder.param(index as u32))).collect();
-            let entry_name = CString::new("entry").unwrap();
-            let (_, entry_bb) = function_builder.append_basic_block(&entry_name, &self.context);
+            let (_, entry_bb) = function_builder.append_basic_block(const_cstr!("entry").as_cstr(), &self.context);
             let builder = builder.position_at_end(entry_bb);
 
             let ret_val = try!(self.trans_expr(&func.body, builder, &named_values));

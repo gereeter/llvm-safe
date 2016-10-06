@@ -1,6 +1,5 @@
 use std::iter::Peekable;
 use std::io::{self, Read, Write};
-use std::ffi::CString;
 
 use compiler::id;
 use compiler::llvm::{Context, Module, Builder};
@@ -72,7 +71,7 @@ pub fn main() {
 
     id::with(|context_id| {
         let context = Context::new(context_id);
-        let mut module = Module::new(&CString::new("mymodule").unwrap(), &context);
+        let mut module = Module::new(const_cstr!("mymodule").as_cstr(), &context);
         let mut builder = Builder::new(&context);
         loop {
             match tokens.peek().cloned() {
