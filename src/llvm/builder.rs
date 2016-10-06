@@ -298,6 +298,13 @@ impl<'cid, 'context, 'fid, 'block> PositionedBuilder<'cid, 'context, 'fid, 'bloc
         }
     }
 
+
+    pub fn position_at_end(&mut self, block: &'block mut BasicBlock<'cid, 'fid>) {
+        unsafe {
+            LLVMPositionBuilderAtEnd(self.as_raw(), block.as_raw());
+        }
+    }
+
     pub fn as_raw(&self) -> LLVMBuilderRef {
         self as *const PositionedBuilder as *mut PositionedBuilder as LLVMBuilderRef
     }

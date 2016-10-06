@@ -6,6 +6,9 @@ pub enum Token {
     // commands
     Def,
     Extern,
+    If,
+    Then,
+    Else,
 
     // primary
     Identifier(String),
@@ -44,6 +47,12 @@ impl<I: Iterator<Item=char>> Iterator for Tokens<I> {
                     Token::Def
                 } else if ident == "extern" {
                     Token::Extern
+                } else if ident == "if" {
+                    Token::If
+                } else if ident == "then" {
+                    Token::Then
+                } else if ident == "else" {
+                    Token::Else
                 } else {
                     Token::Identifier(ident)
                 }

@@ -59,15 +59,35 @@ pub fn parse_paren_expr<I: Iterator<Item=Token>>(iter: &mut Peekable<I>) -> Resu
     }
 }
 
+/// ifexpr ::= 'if' expression 'then' expression 'else' expression
+pub fn parse_if_expr<I: Iterator<Item=Token>>(iter: &mut Peekable<I>) -> Result<Expr, &'static str> {
+    if let Some(Token::If) = iter.next() {
+        let cond_expr = try!(parse_expr(iter));
+        if iter.next() != Some(Token::Then) {
+            return Err("Expected 'then'");
+        }
+        let then_expr = try!(parse_expr(iter));
+        if iter.next() != Some(Token::Else) {
+            return Err("Expected 'else'");
+        }
+        let else_expr = try!(parse_expr(iter));
+        Ok(Expr::If(Box::new(cond_expr), Box::new(then_expr), Box::new(else_expr)))
+    } else {
+        Err("Expected 'if'")
+    }
+}
+
 /// primary
 ///   ::= identifierexpr
 ///   ::= numberexpr
 ///   ::= parenexpr
+///   ::= ifexpr
 pub fn parse_primary<I: Iterator<Item=Token>>(iter: &mut Peekable<I>) -> Result<Expr, &'static str> {
     match iter.peek() {
         Some(&Token::Identifier(_)) => parse_identifier_expr(iter),
         Some(&Token::Number(_)) => parse_number_expr(iter),
         Some(&Token::Other('(')) => parse_paren_expr(iter),
+        Some(&Token::If) => parse_if_expr(iter),
         None => Err("Unexpected EOF when expecting expression"),
         _ => {
             iter.next();
