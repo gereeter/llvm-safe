@@ -1,7 +1,7 @@
-extern crate compiler;
+extern crate llvm_safe;
 #[macro_use] extern crate const_cstr;
 
-use compiler::{id, llvm};
+use llvm_safe::{id, llvm};
 
 fn main() {
     id::with(|context_id| {

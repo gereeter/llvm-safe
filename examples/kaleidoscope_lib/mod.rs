@@ -1,8 +1,8 @@
 use std::iter::Peekable;
 use std::io::{self, Read, Write};
 
-use compiler::id;
-use compiler::llvm::{Context, Module, Builder};
+use llvm_safe::id;
+use llvm_safe::llvm::{Context, Module, Builder};
 
 use kaleidoscope_lib::lexer::{Token, Tokens};
 use kaleidoscope_lib::parser::{parse_definition, parse_extern, parse_top_level_expr};

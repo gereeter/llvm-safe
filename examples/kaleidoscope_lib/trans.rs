@@ -2,10 +2,10 @@ use std::collections::HashMap;
 use std::ffi::CString;
 use std::iter::repeat;
 
-use compiler::id;
-use compiler::llvm;
-use compiler::llvm::{Constant, Type, Function, Value};
-use compiler::llvm::LLVMRealPredicate;
+use llvm_safe::id;
+use llvm_safe::llvm;
+use llvm_safe::llvm::{Constant, Type, Function, Value};
+use llvm_safe::llvm::LLVMRealPredicate;
 
 use kaleidoscope_lib::ast;
 

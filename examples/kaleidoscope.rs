@@ -1,6 +1,6 @@
 #![feature(io)]
 
-extern crate compiler;
+extern crate llvm_safe;
 #[macro_use] extern crate const_cstr;
 
 mod kaleidoscope_lib;

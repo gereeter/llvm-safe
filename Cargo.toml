@@ -1,5 +1,5 @@
 [package]
-name = "compiler"
+name = "llvm-safe"
 version = "0.1.0"
 authors = ["Jonathan S <gereeter+code@gmail.com>"]
 
