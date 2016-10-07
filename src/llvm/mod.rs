@@ -7,9 +7,11 @@ pub use self::value::Value;
 pub use self::phi::Phi;
 pub use self::constant::Constant;
 pub use self::ty::Type;
+pub use self::target::{Target, TargetMachine, DataLayout};
 
 pub use llvm_sys::{LLVMIntPredicate, LLVMRealPredicate};
 
+pub mod init;
 pub mod context;
 pub mod module;
 pub mod function;
@@ -19,7 +21,7 @@ pub mod value;
 pub mod phi;
 pub mod constant;
 pub mod ty;
-
+pub mod target;
 
 //
 // TODO: Error Checking

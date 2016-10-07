@@ -1,3 +1,4 @@
+use std::fmt;
 use std::ptr::Unique;
 use std::ops::{Deref, DerefMut};
 
@@ -6,11 +7,11 @@ pub trait DropInPlace {
     unsafe fn drop_in_place(&mut self);
 }
 
-pub struct Owned<T: DropInPlace> {
+pub struct Owned<T: DropInPlace + ?Sized> {
     value: Unique<T>
 }
 
-impl<T: DropInPlace> Drop for Owned<T> {
+impl<T: DropInPlace + ?Sized> Drop for Owned<T> {
     fn drop(&mut self) {
         unsafe {
             self.value.get_mut().drop_in_place();
@@ -18,7 +19,7 @@ impl<T: DropInPlace> Drop for Owned<T> {
     }
 }
 
-impl<T: DropInPlace> Deref for Owned<T> {
+impl<T: DropInPlace + ?Sized> Deref for Owned<T> {
     type Target = T;
     fn deref(&self) -> &T {
         unsafe {
@@ -27,7 +28,7 @@ impl<T: DropInPlace> Deref for Owned<T> {
     }
 }
 
-impl<T: DropInPlace> DerefMut for Owned<T> {
+impl<T: DropInPlace + ?Sized> DerefMut for Owned<T> {
     fn deref_mut(&mut self) -> &mut T {
         unsafe {
             self.value.get_mut()
@@ -35,7 +36,13 @@ impl<T: DropInPlace> DerefMut for Owned<T> {
     }
 }
 
-impl<T: DropInPlace> Owned<T> {
+impl<T: DropInPlace + ?Sized + fmt::Debug> fmt::Debug for Owned<T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        (&**self).fmt(f)
+    }
+}
+
+impl<T: DropInPlace + ?Sized> Owned<T> {
     pub unsafe fn from_raw(ptr: *mut T) -> Owned<T> {
         Owned {
             value: Unique::new(ptr)

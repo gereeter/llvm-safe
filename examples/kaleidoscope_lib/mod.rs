@@ -2,7 +2,9 @@ use std::iter::Peekable;
 use std::io::{self, Read, Write};
 
 use llvm_safe::id;
+use llvm_safe::llvm::init;
 use llvm_safe::llvm::{Context, Module, Builder};
+use llvm_safe::llvm::target;
 
 use kaleidoscope_lib::lexer::{Token, Tokens};
 use kaleidoscope_lib::parser::{parse_definition, parse_extern, parse_top_level_expr};
@@ -61,6 +63,18 @@ fn handle_top_level_expr<'cid: 'context, 'context, I: Iterator<Item=Token>>(iter
 }
 
 pub fn main() {
+    unsafe {
+        init::init_target_infos();
+        init::init_targets();
+        init::init_target_mcs();
+    }
+
+    let target_triple = target::default_triple();
+    println!("{:?}", &target_triple);
+    let target = target::Target::from_triple(&target_triple).unwrap();
+    let target_machine = target::TargetMachine::new(target, &target_triple, const_cstr!("generic").as_cstr(), const_cstr!("").as_cstr(), target::LLVMCodeGenOptLevel::LLVMCodeGenLevelNone, target::LLVMRelocMode::LLVMRelocDefault, target::LLVMCodeModel::LLVMCodeModelDefault);
+    println!("{:?}", target_machine.data_layout().as_string());
+
     let stdout = io::stdout();
 
     print!("ready> ");
@@ -72,6 +86,9 @@ pub fn main() {
     id::with(|context_id| {
         let context = Context::new(context_id);
         let mut module = Module::new(const_cstr!("mymodule").as_cstr(), &context);
+        module.set_data_layout(target_machine.data_layout());
+        module.set_target_triple(&target_triple);
+
         let mut builder = Builder::new(&context);
         loop {
             match tokens.peek().cloned() {

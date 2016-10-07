@@ -6,7 +6,7 @@ use llvm_sys::core::*;
 
 use owned::{Owned, DropInPlace};
 
-use llvm::{Context, Type, Function, FunctionLabel};
+use llvm::{Context, Type, Function, FunctionLabel, DataLayout};
 
 pub struct Module<'cid: 'context, 'context> {
     _context: PhantomData<&'context Context<'cid>>
@@ -24,6 +24,19 @@ impl<'cid, 'context> Module<'cid, 'context> {
             Owned::from_raw(
                 LLVMModuleCreateWithNameInContext(name.as_ptr(), context.as_raw()) as *mut Module
             )
+        }
+    }
+
+    pub fn set_data_layout(&mut self, layout: &DataLayout) {
+        unsafe {
+            // TODO(3.9): Use LLVMSetModuleDataLayout
+            LLVMSetDataLayout(self.as_raw(), layout.as_string().as_ptr());
+        }
+    }
+
+    pub fn set_target_triple(&mut self, triple: &CStr) {
+        unsafe {
+            LLVMSetTarget(self.as_raw(), triple.as_ptr());
         }
     }
 
