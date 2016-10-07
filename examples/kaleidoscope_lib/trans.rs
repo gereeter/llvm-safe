@@ -99,12 +99,12 @@ impl<'cid, 'context, 'module> Context<'cid, 'context, 'module> {
 
         let mut function = self.module.add_function(&c_name, func_type);
 
-        for (index, arg_name) in proto.args.iter().enumerate() {
-            let c_arg_name = CString::new(&**arg_name).unwrap();
-            id::with(|fid| {
-                function.builder(fid).param(index as u32).set_name(&c_arg_name);
-            });
-        }
+        id::with(|fid| {
+            for (param, arg_name) in function.builder(fid).params().zip(proto.args.iter()) {
+                let c_arg_name = CString::new(&**arg_name).unwrap();
+                param.set_name(&c_arg_name);
+            }
+        });
 
         Ok(function)
     }
@@ -113,7 +113,7 @@ impl<'cid, 'context, 'module> Context<'cid, 'context, 'module> {
         let mut function = try!(self.trans_proto(&func.proto));
         try!(id::with(|function_id| {
             let mut function_builder = function.builder(function_id);
-            let named_values = func.proto.args.iter().enumerate().map(|(index, name)| (&**name, function_builder.param(index as u32))).collect();
+            let named_values = func.proto.args.iter().map(|s| &**s).zip(function_builder.params()).collect();
             let (_, entry_bb) = function_builder.append_basic_block(const_cstr!("entry").as_cstr(), self.context);
             let builder = builder.position_at_end(entry_bb);
 

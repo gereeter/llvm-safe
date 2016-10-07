@@ -1,4 +1,5 @@
 use std::ffi::CStr;
+use std::marker::PhantomData;
 
 use llvm_sys::prelude::*;
 use llvm_sys::core::*;
@@ -53,6 +54,38 @@ impl<'cid, 'fid, 'function> FunctionBuilder<'cid, 'fid, 'function> {
     pub fn param(&self, index: u32) -> &'function Value<'cid, 'fid> {
         unsafe {
             &*(LLVMGetParam(self.inner.as_raw(), index) as *const Value)
+        }
+    }
+
+    pub fn params(&self) -> FunctionParams<'cid, 'fid, 'function> {
+        FunctionParams {
+            _context_id: IdRef::new(),
+            _function_id: IdRef::new(),
+            _function: PhantomData,
+            inner: unsafe { LLVMGetFirstParam(self.inner.as_raw()) }
+        }
+    }
+}
+
+pub struct FunctionParams<'cid: 'function, 'fid: 'function, 'function> {
+    _context_id: IdRef<'cid>,
+    _function_id: IdRef<'fid>,
+    _function: PhantomData<&'function Function<'cid>>,
+    inner: LLVMValueRef
+}
+
+impl<'cid: 'function, 'fid: 'function, 'function> Iterator for FunctionParams<'cid, 'fid, 'function> {
+    type Item = &'function Value<'cid, 'fid>;
+
+    fn next(&mut self) -> Option<&'function Value<'cid, 'fid>> {
+        if self.inner.is_null() {
+            None
+        } else {
+            unsafe {
+                let ret = Some(&*(self.inner as *const Value));
+                self.inner = LLVMGetNextParam(self.inner);
+                ret
+            }
         }
     }
 }
