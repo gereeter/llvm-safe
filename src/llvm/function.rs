@@ -51,12 +51,6 @@ impl<'cid, 'fid, 'function> FunctionBuilder<'cid, 'fid, 'function> {
         }
     }
 
-    pub fn param(&self, index: u32) -> &'function Value<'cid, 'fid> {
-        unsafe {
-            &*(LLVMGetParam(self.inner.as_raw(), index) as *const Value)
-        }
-    }
-
     pub fn params(&self) -> FunctionParams<'cid, 'fid, 'function> {
         FunctionParams {
             _context_id: IdRef::new(),
