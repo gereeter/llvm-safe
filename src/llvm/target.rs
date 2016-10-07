@@ -8,8 +8,13 @@ use llvm_sys::target_machine::{LLVMTargetMachineRef, LLVMCreateTargetMachine, LL
 use llvm_sys::target::{LLVMTargetDataRef, LLVMCopyStringRepOfTargetData, LLVMDisposeTargetData, LLVMCreateTargetData};
 use llvm_sys::target_machine::LLVMGetTargetMachineData;
 
+pub use llvm_sys::target_machine::LLVMCodeGenFileType;
+use llvm_sys::target_machine::LLVMTargetMachineEmitToFile;
+
 use ffi::MallocCStr;
 use owned::{Owned, DropInPlace};
+
+use llvm::module::Module;
 
 pub fn default_triple() -> Owned<MallocCStr> {
     unsafe {
@@ -53,6 +58,17 @@ impl TargetMachine {
     pub fn new(target: &Target, triple: &CStr, cpu: &CStr, features: &CStr, opt_level: LLVMCodeGenOptLevel, reloc_mode: LLVMRelocMode, code_model: LLVMCodeModel) -> Owned<TargetMachine> {
         unsafe {
             Owned::from_raw(LLVMCreateTargetMachine(target.as_raw(), triple.as_ptr(), cpu.as_ptr(), features.as_ptr(), opt_level, reloc_mode, code_model) as *mut TargetMachine)
+        }
+    }
+
+    pub fn emit_module_to_file<'cid, 'context>(&self, module: &Module<'cid, 'context>, filename: &CStr, codegen: LLVMCodeGenFileType) -> Result<(), Owned<MallocCStr>> {
+        unsafe {
+            let mut err_ptr = mem::uninitialized();
+            if LLVMTargetMachineEmitToFile(self.as_raw(), module.as_raw(), filename.as_ptr() as *mut _, codegen, &mut err_ptr) == 0 {
+                Ok(())
+            } else {
+                Err(MallocCStr::from_raw(err_ptr))
+            }
         }
     }
 

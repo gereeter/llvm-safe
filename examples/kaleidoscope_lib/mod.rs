@@ -67,6 +67,7 @@ pub fn main() {
         init::init_target_infos();
         init::init_targets();
         init::init_target_mcs();
+        init::init_asm_printers();
     }
 
     let target_triple = target::default_triple();
@@ -107,6 +108,10 @@ pub fn main() {
                     handle_top_level_expr(&mut tokens, &context, &mut module, &mut builder);
                 }
             }
+
+            print!("Writing to file...");
+            target_machine.emit_module_to_file(&module, const_cstr!("output.o").as_cstr(), target::LLVMCodeGenFileType::LLVMObjectFile).unwrap();
+            println!(" done.");
 
             print!("ready> ");
             stdout.lock().flush().unwrap();
