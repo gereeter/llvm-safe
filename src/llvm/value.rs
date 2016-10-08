@@ -12,6 +12,7 @@ pub struct Value<'cid, 'mid, 'fid> {
 }
 
 impl<'cid, 'mid, 'fid> Value<'cid, 'mid, 'fid> {
+    // FIXME: Should this require a mutable reference?
     pub fn set_name(&self, name: &CStr) {
         unsafe {
             LLVMSetValueName(self.as_raw(), name.as_ptr());
