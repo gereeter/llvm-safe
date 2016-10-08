@@ -22,7 +22,7 @@ impl<'cid, 'context, 'mid, 'module> Context<'cid, 'context, 'mid, 'module> {
         }
     }
 
-    pub fn trans_expr<'fid: 'block, 'block>(&mut self, expr: &ast::Expr, fbuilder: &mut llvm::FunctionBuilder<'cid, 'mid, 'fid, 'block>, builder: &mut llvm::PositionedBuilder<'cid, 'context, 'mid, 'fid, 'block>, named_values: &HashMap<&str, &'block Value<'cid, 'fid>>) -> Result<&'block Value<'cid, 'fid>, &'static str> {
+    pub fn trans_expr<'fid: 'block, 'block>(&mut self, expr: &ast::Expr, fbuilder: &mut llvm::FunctionBuilder<'cid, 'mid, 'fid, 'block>, builder: &mut llvm::PositionedBuilder<'cid, 'context, 'mid, 'fid, 'block>, named_values: &HashMap<&str, &'block Value<'cid, 'mid, 'fid>>) -> Result<&'block Value<'cid, 'mid, 'fid>, &'static str> where 'module: 'block {
         match *expr {
             ast::Expr::Number(value) => Ok(Constant::f64(value, self.context).as_value()),
             ast::Expr::Variable(ref name) => named_values.get(&**name).cloned().ok_or("Unknown name in trans"),
@@ -56,7 +56,7 @@ impl<'cid, 'context, 'mid, 'module> Context<'cid, 'context, 'mid, 'module> {
 
                         let arg_vals = args.iter().map(|arg| self.trans_expr(arg, fbuilder, builder, named_values).unwrap()).collect::<Vec<_>>();
 
-                        Ok(builder.call(func, &arg_vals, const_cstr!("calltmp").as_cstr()))
+                        Ok(builder.call(func.as_value(), &arg_vals, const_cstr!("calltmp").as_cstr()))
                     },
                     None => Err("Calling function that does not exist")
                 }

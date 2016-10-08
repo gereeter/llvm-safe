@@ -22,7 +22,7 @@ impl<'cid> Constant<'cid> {
         }
     }
 
-    pub fn as_value<'fid>(&self) -> &Value<'cid, 'fid> {
+    pub fn as_value<'mid, 'fid>(&self) -> &Value<'cid, 'mid, 'fid> {
         unsafe {
             &*(self.as_raw() as *mut Value)
         }

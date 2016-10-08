@@ -5,20 +5,21 @@ use id::IdRef;
 
 use llvm::{Label, Value};
 
-pub struct Phi<'cid, 'fid> {
+pub struct Phi<'cid, 'mid, 'fid> {
     _context_id: IdRef<'cid>,
+    _module_id: IdRef<'mid>,
     _function_id: IdRef<'fid>
 }
 
-impl<'cid, 'fid> Phi<'cid, 'fid> {
+impl<'cid, 'mid, 'fid> Phi<'cid, 'mid, 'fid> {
     // TODO: Expose bulk addition?
-    pub fn add_incoming_branch(&mut self, value: &Value<'cid, 'fid>, block: &Label<'fid>) {
+    pub fn add_incoming_branch(&mut self, value: &Value<'cid, 'mid, 'fid>, block: &Label<'fid>) {
         unsafe {
             LLVMAddIncoming(self.as_raw(), [value.as_raw()].as_mut_ptr(), [block.as_raw()].as_mut_ptr(), 1);
         }
     }
 
-    pub fn as_value(&self) -> &Value<'cid, 'fid> {
+    pub fn as_value(&self) -> &Value<'cid, 'mid, 'fid> {
         unsafe {
             &*(self.as_raw() as *mut Value)
         }

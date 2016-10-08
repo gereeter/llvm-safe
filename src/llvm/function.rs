@@ -70,9 +70,9 @@ pub struct FunctionParams<'cid: 'function, 'mid: 'function, 'fid: 'function, 'fu
 }
 
 impl<'cid: 'function, 'mid: 'function, 'fid: 'function, 'function> Iterator for FunctionParams<'cid, 'mid, 'fid, 'function> {
-    type Item = &'function Value<'cid, 'fid>;
+    type Item = &'function Value<'cid, 'mid, 'fid>;
 
-    fn next(&mut self) -> Option<&'function Value<'cid, 'fid>> {
+    fn next(&mut self) -> Option<&'function Value<'cid, 'mid, 'fid>> {
         if self.inner.is_null() {
             None
         } else {
@@ -94,6 +94,12 @@ impl<'cid, 'mid> FunctionLabel<'cid, 'mid> {
     pub fn num_args(&self) -> usize {
         unsafe {
             LLVMCountParams(self.as_raw()) as usize
+        }
+    }
+
+    pub fn as_value<'fid>(&self) -> &Value<'cid, 'mid, 'fid> {
+        unsafe {
+            &*(self.as_raw() as *mut Value)
         }
     }
 

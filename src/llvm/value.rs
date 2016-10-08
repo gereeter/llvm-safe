@@ -5,12 +5,13 @@ use llvm_sys::core::*;
 
 use id::IdRef;
 
-pub struct Value<'cid, 'fid> {
+pub struct Value<'cid, 'mid, 'fid> {
     _context_id: IdRef<'cid>,
+    _module_id: IdRef<'mid>,
     _function_id: IdRef<'fid>
 }
 
-impl<'cid, 'fid> Value<'cid, 'fid> {
+impl<'cid, 'mid, 'fid> Value<'cid, 'mid, 'fid> {
     pub fn set_name(&self, name: &CStr) {
         unsafe {
             LLVMSetValueName(self.as_raw(), name.as_ptr());
