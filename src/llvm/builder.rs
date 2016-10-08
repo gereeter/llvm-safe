@@ -28,7 +28,7 @@ impl<'cid, 'context> Builder<'cid, 'context> {
         }
     }
 
-    pub fn position_at_end<'fid, 'block, 'builder>(&'builder mut self, block: &'block mut BasicBlock<'cid, 'fid>) -> &'builder mut PositionedBuilder<'cid, 'context, 'fid, 'block> {
+    pub fn position_at_end<'mid: 'block, 'fid: 'block, 'block, 'builder>(&'builder mut self, block: &'block mut BasicBlock<'cid, 'mid, 'fid>) -> &'builder mut PositionedBuilder<'cid, 'context, 'mid, 'fid, 'block> {
         unsafe {
             LLVMPositionBuilderAtEnd(self.as_raw(), block.as_raw());
             &mut *(self as *mut Builder as *mut PositionedBuilder)
@@ -40,12 +40,12 @@ impl<'cid, 'context> Builder<'cid, 'context> {
     }
 }
 
-pub struct PositionedBuilder<'cid: 'context, 'context: 'block, 'fid: 'block, 'block> {
-    _block: PhantomData<&'block mut BasicBlock<'cid, 'fid>>,
+pub struct PositionedBuilder<'cid: 'context, 'context: 'block, 'mid: 'block, 'fid: 'block, 'block> {
+    _block: PhantomData<&'block mut BasicBlock<'cid, 'mid, 'fid>>,
     _builder: PhantomData<Builder<'cid, 'context>>
 }
 
-impl<'cid, 'context, 'fid, 'block> PositionedBuilder<'cid, 'context, 'fid, 'block> {
+impl<'cid, 'context, 'mid, 'fid, 'block> PositionedBuilder<'cid, 'context, 'mid, 'fid, 'block> {
     pub fn br(&mut self, target: &Label<'cid, 'fid>) -> &'block Value<'cid, 'fid> {
         unsafe {
             &*(LLVMBuildBr(self.as_raw(), target.as_raw()) as *const Value)
@@ -280,8 +280,7 @@ impl<'cid, 'context, 'fid, 'block> PositionedBuilder<'cid, 'context, 'fid, 'bloc
         }
     }
 
-    // FIXME: Is it valid to call functions from external modules?
-    pub fn call<'mid>(&mut self, func: &FunctionLabel<'cid, 'mid>, args: &[&Value<'cid, 'fid>], name: &CStr) -> &'block Value<'cid, 'fid> {
+    pub fn call(&mut self, func: &FunctionLabel<'cid, 'mid>, args: &[&Value<'cid, 'fid>], name: &CStr) -> &'block Value<'cid, 'fid> {
         unsafe {
             &*(LLVMBuildCall(self.as_raw(), func.as_raw(), args.as_ptr() as *const LLVMValueRef as *mut LLVMValueRef, args.len() as u32, name.as_ptr()) as *const Value)
         }
@@ -300,7 +299,7 @@ impl<'cid, 'context, 'fid, 'block> PositionedBuilder<'cid, 'context, 'fid, 'bloc
     }
 
 
-    pub fn position_at_end(&mut self, block: &'block mut BasicBlock<'cid, 'fid>) {
+    pub fn position_at_end(&mut self, block: &'block mut BasicBlock<'cid, 'mid, 'fid>) {
         unsafe {
             LLVMPositionBuilderAtEnd(self.as_raw(), block.as_raw());
         }

@@ -22,7 +22,7 @@ impl<'cid, 'context, 'mid, 'module> Context<'cid, 'context, 'mid, 'module> {
         }
     }
 
-    pub fn trans_expr<'fid: 'block, 'block>(&mut self, expr: &ast::Expr, fbuilder: &mut llvm::FunctionBuilder<'cid, 'mid, 'fid, 'block>, builder: &mut llvm::PositionedBuilder<'cid, 'context, 'fid, 'block>, named_values: &HashMap<&str, &'block Value<'cid, 'fid>>) -> Result<&'block Value<'cid, 'fid>, &'static str> {
+    pub fn trans_expr<'fid: 'block, 'block>(&mut self, expr: &ast::Expr, fbuilder: &mut llvm::FunctionBuilder<'cid, 'mid, 'fid, 'block>, builder: &mut llvm::PositionedBuilder<'cid, 'context, 'mid, 'fid, 'block>, named_values: &HashMap<&str, &'block Value<'cid, 'fid>>) -> Result<&'block Value<'cid, 'fid>, &'static str> {
         match *expr {
             ast::Expr::Number(value) => Ok(Constant::f64(value, self.context).as_value()),
             ast::Expr::Variable(ref name) => named_values.get(&**name).cloned().ok_or("Unknown name in trans"),
