@@ -61,7 +61,7 @@ impl TargetMachine {
         }
     }
 
-    pub fn emit_module_to_file<'cid, 'context>(&self, module: &Module<'cid, 'context>, filename: &CStr, codegen: LLVMCodeGenFileType) -> Result<(), Owned<MallocCStr>> {
+    pub fn emit_module_to_file<'cid, 'mid, 'context>(&self, module: &Module<'cid, 'mid, 'context>, filename: &CStr, codegen: LLVMCodeGenFileType) -> Result<(), Owned<MallocCStr>> {
         unsafe {
             let mut err_ptr = mem::uninitialized();
             if LLVMTargetMachineEmitToFile(self.as_raw(), module.as_raw(), filename.as_ptr() as *mut _, codegen, &mut err_ptr) == 0 {

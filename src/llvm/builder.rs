@@ -280,7 +280,8 @@ impl<'cid, 'context, 'fid, 'block> PositionedBuilder<'cid, 'context, 'fid, 'bloc
         }
     }
 
-    pub fn call(&mut self, func: &FunctionLabel<'cid>, args: &[&Value<'cid, 'fid>], name: &CStr) -> &'block Value<'cid, 'fid> {
+    // FIXME: Is it valid to call functions from external modules?
+    pub fn call<'mid>(&mut self, func: &FunctionLabel<'cid, 'mid>, args: &[&Value<'cid, 'fid>], name: &CStr) -> &'block Value<'cid, 'fid> {
         unsafe {
             &*(LLVMBuildCall(self.as_raw(), func.as_raw(), args.as_ptr() as *const LLVMValueRef as *mut LLVMValueRef, args.len() as u32, name.as_ptr()) as *const Value)
         }

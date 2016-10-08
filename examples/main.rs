@@ -4,9 +4,9 @@ extern crate llvm_safe;
 use llvm_safe::{id, llvm};
 
 fn main() {
-    id::with(|context_id| {
+    id::with2(|context_id, module_id| {
         let context = llvm::Context::new(context_id);
-        let mut module = llvm::Module::new(const_cstr!("mymodule").as_cstr(), &context);
+        let mut module = llvm::Module::new(module_id, const_cstr!("mymodule").as_cstr(), &context);
         let mut module_builder = module.builder();
 
         let i32_ty = llvm::Type::i32(&context);

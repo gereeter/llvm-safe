@@ -17,7 +17,7 @@ mod trans;
 
 // Driver //
 
-fn handle_definition<'cid: 'context, 'context, I: Iterator<Item=Token>>(iter: &mut Peekable<I>, context: &'context Context<'cid>, module: &mut Module<'cid, 'context>, builder: &mut Builder<'cid, 'context>) {
+fn handle_definition<'cid: 'context, 'context, 'mid, I: Iterator<Item=Token>>(iter: &mut Peekable<I>, context: &'context Context<'cid>, module: &mut Module<'cid, 'context, 'mid>, builder: &mut Builder<'cid, 'context>) {
     match parse_definition(iter) {
         Ok(def) => {
             match trans::Context::new(context, module.builder()).trans_func(&def, builder) {
@@ -32,7 +32,7 @@ fn handle_definition<'cid: 'context, 'context, I: Iterator<Item=Token>>(iter: &m
     }
 }
 
-fn handle_extern<'cid: 'context, 'context, I: Iterator<Item=Token>>(iter: &mut Peekable<I>, context: &'context Context<'cid>, module: &mut Module<'cid, 'context>) {
+fn handle_extern<'cid: 'context, 'context, 'mid, I: Iterator<Item=Token>>(iter: &mut Peekable<I>, context: &'context Context<'cid>, module: &mut Module<'cid, 'context, 'mid>) {
     match parse_extern(iter) {
         Ok(proto) => {
             match trans::Context::new(context, module.builder()).trans_proto(&proto) {
@@ -47,7 +47,7 @@ fn handle_extern<'cid: 'context, 'context, I: Iterator<Item=Token>>(iter: &mut P
     }
 }
 
-fn handle_top_level_expr<'cid: 'context, 'context, I: Iterator<Item=Token>>(iter: &mut Peekable<I>, context: &'context Context<'cid>, module: &mut Module<'cid, 'context>, builder: &mut Builder<'cid, 'context>) {
+fn handle_top_level_expr<'cid: 'context, 'context, 'mid, I: Iterator<Item=Token>>(iter: &mut Peekable<I>, context: &'context Context<'cid>, module: &mut Module<'cid, 'context, 'mid>, builder: &mut Builder<'cid, 'context>) {
     match parse_top_level_expr(iter) {
         Ok(def) => {
             match trans::Context::new(context, module.builder()).trans_func(&def, builder) {
@@ -84,9 +84,9 @@ pub fn main() {
     let stdin = io::stdin();
     let mut tokens = Tokens::new(stdin.lock().chars().map(|c| c.unwrap())).peekable();
 
-    id::with(|context_id| {
+    id::with2(|context_id, module_id| {
         let context = Context::new(context_id);
-        let mut module = Module::new(const_cstr!("mymodule").as_cstr(), &context);
+        let mut module = Module::new(module_id, const_cstr!("mymodule").as_cstr(), &context);
         module.set_data_layout(target_machine.data_layout());
         module.set_target_triple(&target_triple);
 

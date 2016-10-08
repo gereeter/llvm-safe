@@ -9,20 +9,20 @@ use llvm_safe::llvm::LLVMRealPredicate;
 
 use kaleidoscope_lib::ast;
 
-pub struct Context<'cid: 'context, 'context: 'module, 'module> {
+pub struct Context<'cid: 'context, 'context: 'module, 'mid: 'module, 'module> {
     context: &'context llvm::Context<'cid>,
-    module: llvm::ModuleBuilder<'cid, 'context, 'module>
+    module: llvm::ModuleBuilder<'cid, 'context, 'mid, 'module>
 }
 
-impl<'cid, 'context, 'module> Context<'cid, 'context, 'module> {
-    pub fn new(context: &'context llvm::Context<'cid>, module: llvm::ModuleBuilder<'cid, 'context, 'module>) -> Self {
+impl<'cid, 'context, 'mid, 'module> Context<'cid, 'context, 'mid, 'module> {
+    pub fn new(context: &'context llvm::Context<'cid>, module: llvm::ModuleBuilder<'cid, 'context, 'mid, 'module>) -> Self {
         Context {
             context: context,
             module: module
         }
     }
 
-    pub fn trans_expr<'fid, 'block>(&mut self, expr: &ast::Expr, fbuilder: &mut llvm::FunctionBuilder<'cid, 'fid, 'block>, builder: &mut llvm::PositionedBuilder<'cid, 'context, 'fid, 'block>, named_values: &HashMap<&str, &'block Value<'cid, 'fid>>) -> Result<&'block Value<'cid, 'fid>, &'static str> {
+    pub fn trans_expr<'fid: 'block, 'block>(&mut self, expr: &ast::Expr, fbuilder: &mut llvm::FunctionBuilder<'cid, 'mid, 'fid, 'block>, builder: &mut llvm::PositionedBuilder<'cid, 'context, 'fid, 'block>, named_values: &HashMap<&str, &'block Value<'cid, 'fid>>) -> Result<&'block Value<'cid, 'fid>, &'static str> {
         match *expr {
             ast::Expr::Number(value) => Ok(Constant::f64(value, self.context).as_value()),
             ast::Expr::Variable(ref name) => named_values.get(&**name).cloned().ok_or("Unknown name in trans"),
@@ -87,7 +87,7 @@ impl<'cid, 'context, 'module> Context<'cid, 'context, 'module> {
         }
     }
 
-    pub fn trans_proto(&mut self, proto: &ast::Prototype) -> Result<&'module mut Function<'cid>, &'static str> {
+    pub fn trans_proto(&mut self, proto: &ast::Prototype) -> Result<&'module mut Function<'cid, 'mid>, &'static str> {
         let c_name = &CString::new(&*proto.name).unwrap();
         if self.module.get_named_function(&c_name).is_some() {
             return Err("Redefinition of already defined function");
@@ -109,7 +109,7 @@ impl<'cid, 'context, 'module> Context<'cid, 'context, 'module> {
         Ok(function)
     }
 
-    pub fn trans_func(&mut self, func: &ast::Function, builder: &mut llvm::Builder<'cid, 'context>) -> Result<&'module mut Function<'cid>, &'static str> {
+    pub fn trans_func(&mut self, func: &ast::Function, builder: &mut llvm::Builder<'cid, 'context>) -> Result<&'module mut Function<'cid, 'mid>, &'static str> {
         let mut function = try!(self.trans_proto(&func.proto));
         try!(id::with(|function_id| {
             let mut function_builder = function.builder(function_id);
