@@ -46,13 +46,13 @@ pub struct PositionedBuilder<'cid: 'context, 'context: 'block, 'mid: 'block, 'fi
 }
 
 impl<'cid, 'context, 'mid, 'fid, 'block> PositionedBuilder<'cid, 'context, 'mid, 'fid, 'block> {
-    pub fn br(&mut self, target: &Label<'cid, 'fid>) -> &'block Value<'cid, 'fid> {
+    pub fn br(&mut self, target: &Label<'fid>) -> &'block Value<'cid, 'fid> {
         unsafe {
             &*(LLVMBuildBr(self.as_raw(), target.as_raw()) as *const Value)
         }
     }
 
-    pub fn cond_br(&mut self, cond: &Value<'cid, 'fid>, then_block: &Label<'cid, 'fid>, else_block: &Label<'cid, 'fid>) -> &'block Value<'cid, 'fid> {
+    pub fn cond_br(&mut self, cond: &Value<'cid, 'fid>, then_block: &Label<'fid>, else_block: &Label<'fid>) -> &'block Value<'cid, 'fid> {
         unsafe {
             &*(LLVMBuildCondBr(self.as_raw(), cond.as_raw(), then_block.as_raw(), else_block.as_raw()) as *const Value)
         }

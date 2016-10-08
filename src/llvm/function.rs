@@ -45,7 +45,7 @@ pub struct FunctionBuilder<'cid: 'function, 'mid: 'function, 'fid, 'function> {
 }
 
 impl<'cid, 'mid, 'fid, 'function> FunctionBuilder<'cid, 'mid, 'fid, 'function> {
-    pub fn append_basic_block(&mut self, name: &CStr, context: &Context<'cid>) -> (&'function Label<'cid, 'fid>, &'function mut BasicBlock<'cid, 'mid, 'fid>) {
+    pub fn append_basic_block(&mut self, name: &CStr, context: &Context<'cid>) -> (&'function Label<'fid>, &'function mut BasicBlock<'cid, 'mid, 'fid>) {
         unsafe {
             let bb_ref = LLVMAppendBasicBlockInContext(context.as_raw(), self.inner.as_raw(), name.as_ptr());
             (&*(bb_ref as *mut Label), &mut *(bb_ref as *mut BasicBlock))

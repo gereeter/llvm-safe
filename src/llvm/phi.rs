@@ -12,7 +12,7 @@ pub struct Phi<'cid, 'fid> {
 
 impl<'cid, 'fid> Phi<'cid, 'fid> {
     // TODO: Expose bulk addition?
-    pub fn add_incoming_branch(&mut self, value: &Value<'cid, 'fid>, block: &Label<'cid, 'fid>) {
+    pub fn add_incoming_branch(&mut self, value: &Value<'cid, 'fid>, block: &Label<'fid>) {
         unsafe {
             LLVMAddIncoming(self.as_raw(), [value.as_raw()].as_mut_ptr(), [block.as_raw()].as_mut_ptr(), 1);
         }

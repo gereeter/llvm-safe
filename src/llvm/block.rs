@@ -14,12 +14,11 @@ impl<'cid, 'mid, 'fid> BasicBlock<'cid, 'mid, 'fid> {
     }
 }
 
-pub struct Label<'cid, 'fid> {
-    _context_id: IdRef<'cid>,
+pub struct Label<'fid> {
     _function_id: IdRef<'fid>
 }
 
-impl<'cid, 'fid> Label<'cid, 'fid> {
+impl<'fid> Label<'fid> {
     pub fn as_raw(&self) -> LLVMBasicBlockRef {
         self as *const Label as *mut Label as LLVMBasicBlockRef
     }
