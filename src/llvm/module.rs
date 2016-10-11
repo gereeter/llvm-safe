@@ -4,7 +4,7 @@ use std::marker::PhantomData;
 use llvm_sys::prelude::*;
 use llvm_sys::core::*;
 
-use id::Id;
+use id::{Id, IdRef};
 use owned::{Owned, DropInPlace};
 
 use llvm::{Context, Type, Function, FunctionLabel, DataLayout};
@@ -42,9 +42,12 @@ impl<'cid, 'context, 'mid> Module<'cid, 'context, 'mid> {
         }
     }
 
-    pub fn builder<'module>(&'module mut self) -> ModuleBuilder<'cid, 'context, 'mid, 'module> {
+    pub fn builder<'module>(&'module mut self) -> ModuleBuilder<'cid, 'mid, 'module> {
         ModuleBuilder {
-            inner: self
+            inner: self.as_raw(),
+            _marker: PhantomData,
+            _module_id: IdRef::new(),
+            _context_id: IdRef::new()
         }
     }
 
@@ -53,20 +56,23 @@ impl<'cid, 'context, 'mid> Module<'cid, 'context, 'mid> {
     }
 }
 
-pub struct ModuleBuilder<'cid: 'context, 'context: 'module, 'mid: 'module, 'module> {
-    inner: &'module mut Module<'cid, 'context, 'mid>
+pub struct ModuleBuilder<'cid: 'module, 'mid: 'module, 'module> {
+    inner: LLVMModuleRef,
+    _marker: PhantomData<&'module mut ()>,
+    _module_id: IdRef<'mid>,
+    _context_id: IdRef<'cid>
 }
 
-impl<'cid, 'context, 'mid, 'module> ModuleBuilder<'cid, 'context, 'mid, 'module> {
+impl<'cid, 'mid, 'module> ModuleBuilder<'cid, 'mid, 'module> {
     pub fn add_function(&mut self, name: &CStr, ty: &Type<'cid>) -> &'module mut Function<'cid, 'mid> {
         unsafe {
-            &mut *(LLVMAddFunction(self.inner.as_raw(), name.as_ptr(), ty.as_raw()) as *mut Function)
+            &mut *(LLVMAddFunction(self.inner, name.as_ptr(), ty.as_raw()) as *mut Function)
         }
     }
 
     pub fn get_named_function(&self, name: &CStr) -> Option<&'module FunctionLabel<'cid, 'mid>> {
         unsafe {
-            let old = LLVMGetNamedFunction(self.inner.as_raw(), name.as_ptr());
+            let old = LLVMGetNamedFunction(self.inner, name.as_ptr());
             if old.is_null() {
                 None
             } else {

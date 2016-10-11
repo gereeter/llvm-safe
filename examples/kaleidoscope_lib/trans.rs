@@ -11,11 +11,11 @@ use kaleidoscope_lib::ast;
 
 pub struct Context<'cid: 'context, 'context: 'module, 'mid: 'module, 'module> {
     context: &'context llvm::Context<'cid>,
-    module: llvm::ModuleBuilder<'cid, 'context, 'mid, 'module>
+    module: llvm::ModuleBuilder<'cid, 'mid, 'module>
 }
 
 impl<'cid, 'context, 'mid, 'module> Context<'cid, 'context, 'mid, 'module> {
-    pub fn new(context: &'context llvm::Context<'cid>, module: llvm::ModuleBuilder<'cid, 'context, 'mid, 'module>) -> Self {
+    pub fn new(context: &'context llvm::Context<'cid>, module: llvm::ModuleBuilder<'cid, 'mid, 'module>) -> Self {
         Context {
             context: context,
             module: module
