@@ -73,10 +73,12 @@ impl<'cid, 'context, 'mid, 'module> Context<'cid, 'context, 'mid, 'module> {
                 builder.position_at_end(then_block);
                 let then_val = try!(self.trans_expr(then_expr, fbuilder, builder, named_values));
                 builder.br(cont_label);
+                let then_label = builder.get_position();
 
                 builder.position_at_end(else_block);
                 let else_val = try!(self.trans_expr(else_expr, fbuilder, builder, named_values));
                 builder.br(cont_label);
+                let else_label = builder.get_position();
 
                 builder.position_at_end(cont_block);
                 let phi = builder.phi(Type::f64(self.context), const_cstr!("iftmp").as_cstr());

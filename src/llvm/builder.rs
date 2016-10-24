@@ -299,6 +299,12 @@ impl<'cid, 'context, 'mid, 'fid, 'block> PositionedBuilder<'cid, 'context, 'mid,
     }
 
 
+    pub fn get_position(&self) -> &'block Label<'fid> {
+        unsafe {
+            &*(LLVMGetInsertBlock(self.as_raw()) as *mut Label as *const Label)
+        }
+    }
+
     pub fn position_at_end(&mut self, block: &'block mut BasicBlock<'cid, 'mid, 'fid>) {
         unsafe {
             LLVMPositionBuilderAtEnd(self.as_raw(), block.as_raw());
