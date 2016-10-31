@@ -11,7 +11,7 @@ use llvm_sys::transforms::scalar::{
     LLVMAddBasicAliasAnalysisPass,
     LLVMAddGVNPass,
     LLVMAddInstructionCombiningPass,
-    LLVMAddDemoteMemoryToRegisterPass,
+    LLVMAddPromoteMemoryToRegisterPass,
     LLVMAddReassociatePass,
     LLVMAddCFGSimplificationPass
 };
@@ -55,7 +55,7 @@ impl<'mid> FunctionPassManager<'mid> {
 
     pub fn add_memory_to_register(&mut self) {
         unsafe {
-            LLVMAddDemoteMemoryToRegisterPass(self.as_raw());
+            LLVMAddPromoteMemoryToRegisterPass(self.as_raw());
         }
     }
 
