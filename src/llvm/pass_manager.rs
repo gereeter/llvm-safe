@@ -7,7 +7,14 @@ use llvm_sys::prelude::LLVMPassManagerRef;
 use llvm_sys::core::{LLVMCreateFunctionPassManagerForModule, LLVMDisposePassManager};
 use llvm_sys::core::{LLVMInitializeFunctionPassManager, LLVMFinalizeFunctionPassManager};
 use llvm_sys::core::LLVMRunFunctionPassManager;
-use llvm_sys::transforms::scalar::{LLVMAddCFGSimplificationPass, LLVMAddDemoteMemoryToRegisterPass};
+use llvm_sys::transforms::scalar::{
+    LLVMAddBasicAliasAnalysisPass,
+    LLVMAddGVNPass,
+    LLVMAddInstructionCombiningPass,
+    LLVMAddDemoteMemoryToRegisterPass,
+    LLVMAddReassociatePass,
+    LLVMAddCFGSimplificationPass
+};
 
 use llvm::{Function, Module, ModuleBuilder};
 
@@ -28,15 +35,39 @@ impl<'mid> FunctionPassManager<'mid> {
         }
     }
 
-    pub fn add_simplify_cfg(&mut self) {
+    pub fn add_basic_alias_analysis(&mut self) {
         unsafe {
-            LLVMAddCFGSimplificationPass(self.as_raw());
+            LLVMAddBasicAliasAnalysisPass(self.as_raw());
         }
     }
 
-    pub fn add_mem2reg(&mut self) {
+    pub fn add_gvn(&mut self) {
+        unsafe {
+            LLVMAddGVNPass(self.as_raw());
+        }
+    }
+
+    pub fn add_instruction_combine(&mut self) {
+        unsafe {
+            LLVMAddInstructionCombiningPass(self.as_raw());
+        }
+    }
+
+    pub fn add_memory_to_register(&mut self) {
         unsafe {
             LLVMAddDemoteMemoryToRegisterPass(self.as_raw());
+        }
+    }
+
+    pub fn add_reassociate(&mut self) {
+        unsafe {
+            LLVMAddReassociatePass(self.as_raw());
+        }
+    }
+
+    pub fn add_simplify_cfg(&mut self) {
+        unsafe {
+            LLVMAddCFGSimplificationPass(self.as_raw());
         }
     }
 

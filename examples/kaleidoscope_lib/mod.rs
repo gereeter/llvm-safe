@@ -93,6 +93,10 @@ pub fn main() {
         module.set_target_triple(&target_triple);
 
         let mut fpm = FunctionPassManager::new(&module);
+        fpm.add_basic_alias_analysis();
+        fpm.add_instruction_combine();
+        fpm.add_reassociate();
+        fpm.add_gvn();
         fpm.add_simplify_cfg();
 
         {
