@@ -8,6 +8,7 @@ pub use self::phi::Phi;
 pub use self::constant::Constant;
 pub use self::ty::Type;
 pub use self::target::{Target, TargetMachine, DataLayout};
+pub use self::pass_manager::{FunctionPassManager, InitializedFunctionPassManager};
 
 pub use llvm_sys::{LLVMIntPredicate, LLVMRealPredicate};
 
@@ -22,6 +23,7 @@ pub mod phi;
 pub mod constant;
 pub mod ty;
 pub mod target;
+pub mod pass_manager;
 
 //
 // TODO: Error Checking
