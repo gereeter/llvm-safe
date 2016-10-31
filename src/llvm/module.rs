@@ -80,4 +80,13 @@ impl<'cid, 'mid, 'module> ModuleBuilder<'cid, 'mid, 'module> {
             }
         }
     }
+
+    pub fn reborrow<'a>(&'a mut self) -> ModuleBuilder<'cid, 'mid, 'a> {
+        ModuleBuilder {
+            inner: self.inner,
+            _marker: PhantomData,
+            _module_id: IdRef::new(),
+            _context_id: IdRef::new()
+        }
+    }
 }

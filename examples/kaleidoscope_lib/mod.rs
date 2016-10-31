@@ -3,7 +3,7 @@ use std::io::{self, Read, Write};
 
 use llvm_safe::id;
 use llvm_safe::llvm::init;
-use llvm_safe::llvm::{Context, Module, Builder};
+use llvm_safe::llvm::{Context, Module, ModuleBuilder, Builder, FunctionPassManager, InitializedFunctionPassManager};
 use llvm_safe::llvm::target;
 
 use kaleidoscope_lib::lexer::{Token, Tokens};
@@ -17,12 +17,13 @@ mod trans;
 
 // Driver //
 
-fn handle_definition<'cid: 'context, 'context, 'mid, I: Iterator<Item=Token>>(iter: &mut Peekable<I>, context: &'context Context<'cid>, module: &mut Module<'cid, 'context, 'mid>, builder: &mut Builder<'cid, 'context>) {
+fn handle_definition<'cid: 'context, 'context, 'mid: 'module + 'fpm, 'module, 'fpm, I: Iterator<Item=Token>>(iter: &mut Peekable<I>, context: &'context Context<'cid>, module: &mut ModuleBuilder<'cid, 'mid, 'module>, fpm: &mut InitializedFunctionPassManager<'mid, 'module, 'fpm>, builder: &mut Builder<'cid, 'context>) {
     match parse_definition(iter) {
         Ok(def) => {
-            match trans::Context::new(context, module.builder()).trans_func(&def, builder) {
+            match trans::Context::new(context, module.reborrow()).trans_func(&def, builder) {
                 Ok(function) => {
                     println!("Read a function definition:");
+                    fpm.run(function);
                     function.dump();
                 },
                 Err(err) => println!("Compilation error: {}", err)
@@ -32,10 +33,10 @@ fn handle_definition<'cid: 'context, 'context, 'mid, I: Iterator<Item=Token>>(it
     }
 }
 
-fn handle_extern<'cid: 'context, 'context, 'mid, I: Iterator<Item=Token>>(iter: &mut Peekable<I>, context: &'context Context<'cid>, module: &mut Module<'cid, 'context, 'mid>) {
+fn handle_extern<'cid: 'context, 'context, 'mid: 'module, 'module, I: Iterator<Item=Token>>(iter: &mut Peekable<I>, context: &'context Context<'cid>, module: &mut ModuleBuilder<'cid, 'mid, 'module>) {
     match parse_extern(iter) {
         Ok(proto) => {
-            match trans::Context::new(context, module.builder()).trans_proto(&proto) {
+            match trans::Context::new(context, module.reborrow()).trans_proto(&proto) {
                 Ok(function) => {
                     println!("Read an extern:");
                     function.dump();
@@ -47,12 +48,13 @@ fn handle_extern<'cid: 'context, 'context, 'mid, I: Iterator<Item=Token>>(iter: 
     }
 }
 
-fn handle_top_level_expr<'cid: 'context, 'context, 'mid, I: Iterator<Item=Token>>(iter: &mut Peekable<I>, context: &'context Context<'cid>, module: &mut Module<'cid, 'context, 'mid>, builder: &mut Builder<'cid, 'context>) {
+fn handle_top_level_expr<'cid: 'context, 'context, 'mid: 'module + 'fpm, 'module, 'fpm, I: Iterator<Item=Token>>(iter: &mut Peekable<I>, context: &'context Context<'cid>, module: &mut ModuleBuilder<'cid, 'mid, 'module>, fpm: &mut InitializedFunctionPassManager<'mid, 'module, 'fpm>, builder: &mut Builder<'cid, 'context>) {
     match parse_top_level_expr(iter) {
         Ok(def) => {
-            match trans::Context::new(context, module.builder()).trans_func(&def, builder) {
+            match trans::Context::new(context, module.reborrow()).trans_func(&def, builder) {
                 Ok(function) => {
                     println!("Read a top level expression:");
+                    fpm.run(function);
                     function.dump();
                 },
                 Err(err) => println!("Compilation error: {}", err)
@@ -90,31 +92,40 @@ pub fn main() {
         module.set_data_layout(target_machine.data_layout());
         module.set_target_triple(&target_triple);
 
-        let mut builder = Builder::new(&context);
-        loop {
-            match tokens.peek().cloned() {
-                None => return,
-                Some(Token::Other(';')) => {
-                    tokens.next();
-                    continue;
-                },
-                Some(Token::Def) => {
-                    handle_definition(&mut tokens, &context, &mut module, &mut builder);
-                },
-                Some(Token::Extern) => {
-                    handle_extern(&mut tokens, &context, &mut module);
-                },
-                _ => {
-                    handle_top_level_expr(&mut tokens, &context, &mut module, &mut builder);
+        let mut fpm = FunctionPassManager::new(&module);
+        fpm.add_simplify_cfg();
+
+        {
+            let mut module_builder = module.builder();
+            let mut fpm = fpm.initialize(&module_builder);
+
+            let mut builder = Builder::new(&context);
+            loop {
+                match tokens.peek().cloned() {
+                    None => break,
+                    Some(Token::Other(';')) => {
+                        tokens.next();
+                        continue;
+                    },
+                    Some(Token::Def) => {
+                        handle_definition(&mut tokens, &context, &mut module_builder, &mut fpm, &mut builder);
+                    },
+                    Some(Token::Extern) => {
+                        handle_extern(&mut tokens, &context, &mut module_builder);
+                    },
+                    _ => {
+                        handle_top_level_expr(&mut tokens, &context, &mut module_builder, &mut fpm, &mut builder);
+                    }
                 }
+
+                print!("ready> ");
+                stdout.lock().flush().unwrap();
             }
-
-            print!("Writing to file...");
-            target_machine.emit_module_to_file(&module, const_cstr!("output.o").as_cstr(), target::LLVMCodeGenFileType::LLVMObjectFile).unwrap();
-            println!(" done.");
-
-            print!("ready> ");
-            stdout.lock().flush().unwrap();
         }
+
+        print!("Writing to file...");
+        target_machine.emit_module_to_file(&module, const_cstr!("output.o").as_cstr(), target::LLVMCodeGenFileType::LLVMObjectFile).unwrap();
+        println!(" done.");
+
     });
 }
