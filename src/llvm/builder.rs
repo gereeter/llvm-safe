@@ -7,7 +7,7 @@ pub use llvm_sys::{LLVMIntPredicate, LLVMRealPredicate};
 
 use owned::{Owned, DropInPlace};
 
-use llvm::{Context, BasicBlock, Label, Value, Phi, Type};
+use llvm::{Context, BasicBlock, Label, Value, Phi, Alloca, Type};
 
 pub struct Builder<'cid: 'context, 'context> {
     _context: PhantomData<&'context Context<'cid>>
@@ -250,15 +250,15 @@ impl<'cid, 'context, 'mid, 'fid, 'block> PositionedBuilder<'cid, 'context, 'mid,
         }
     }
 
-    pub fn alloca(&mut self, ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
+    pub fn alloca(&mut self, ty: &Type<'cid>, name: &CStr) -> &'block mut Alloca<'cid, 'mid, 'fid> {
         unsafe {
-            &*(LLVMBuildAlloca(self.as_raw(), ty.as_raw(), name.as_ptr()) as *const Value)
+            &mut *(LLVMBuildAlloca(self.as_raw(), ty.as_raw(), name.as_ptr()) as *mut Alloca)
         }
     }
 
-    pub fn array_alloca(&mut self, ty: &Type<'cid>, len: &Value<'cid, 'mid, 'fid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
+    pub fn array_alloca(&mut self, ty: &Type<'cid>, len: &Value<'cid, 'mid, 'fid>, name: &CStr) -> &'block mut Alloca<'cid, 'mid, 'fid> {
         unsafe {
-            &*(LLVMBuildArrayAlloca(self.as_raw(), ty.as_raw(), len.as_raw(), name.as_ptr()) as *const Value)
+            &mut *(LLVMBuildArrayAlloca(self.as_raw(), ty.as_raw(), len.as_raw(), name.as_ptr()) as *mut Alloca)
         }
     }
 
