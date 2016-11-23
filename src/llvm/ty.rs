@@ -1,6 +1,8 @@
 use llvm_sys::prelude::*;
 use llvm_sys::core::*;
 
+use libc::c_uint;
+
 use id::IdRef;
 
 use llvm::context::Context;
@@ -49,6 +51,12 @@ impl<'cid> Type<'cid> {
     pub fn i64<'ctx>(context: &'ctx Context<'cid>) -> &'ctx Type<'cid> {
         unsafe {
             &*(LLVMInt64TypeInContext(context.as_raw()) as *mut Type)
+        }
+    }
+
+    pub fn pointer<'ctx>(inner: &'ctx Type<'cid>, address_space: c_uint) -> &'ctx Type<'cid> {
+        unsafe {
+            &*(LLVMPointerType(inner.as_raw(), address_space) as *mut Type)
         }
     }
 
