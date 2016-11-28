@@ -11,6 +11,7 @@ use llvm_sys::transforms::scalar::{
     LLVMAddBasicAliasAnalysisPass,
     LLVMAddGVNPass,
     LLVMAddInstructionCombiningPass,
+    LLVMAddMemCpyOptPass,
     LLVMAddPromoteMemoryToRegisterPass,
     LLVMAddReassociatePass,
     LLVMAddCFGSimplificationPass
@@ -50,6 +51,12 @@ impl<'mid> FunctionPassManager<'mid> {
     pub fn add_instruction_combine(&mut self) {
         unsafe {
             LLVMAddInstructionCombiningPass(self.as_raw());
+        }
+    }
+
+    pub fn add_mem_cpy_opt(&mut self) {
+        unsafe {
+            LLVMAddMemCpyOptPass(self.as_raw());
         }
     }
 

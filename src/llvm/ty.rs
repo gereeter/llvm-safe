@@ -54,6 +54,12 @@ impl<'cid> Type<'cid> {
         }
     }
 
+    pub fn void<'ctx>(context: &'ctx Context<'cid>) -> &'ctx Type<'cid> {
+        unsafe {
+            &*(LLVMVoidTypeInContext(context.as_raw()) as *mut Type)
+        }
+    }
+
     pub fn pointer<'ctx>(inner: &'ctx Type<'cid>, address_space: c_uint) -> &'ctx Type<'cid> {
         unsafe {
             &*(LLVMPointerType(inner.as_raw(), address_space) as *mut Type)

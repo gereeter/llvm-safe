@@ -1,6 +1,8 @@
 use std::ffi::CStr;
 use std::marker::PhantomData;
 
+use libc::c_uint;
+
 use llvm_sys::prelude::*;
 use llvm_sys::core::*;
 pub use llvm_sys::{LLVMIntPredicate, LLVMRealPredicate};
@@ -253,6 +255,12 @@ impl<'cid, 'context, 'mid, 'fid, 'block> PositionedBuilder<'cid, 'context, 'mid,
     pub fn bitcast(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
         unsafe {
             &*(LLVMBuildBitCast(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
+        }
+    }
+
+    pub fn get_element_ptr(&mut self, ptr: &Value<'cid, 'mid, 'fid>, indices: &[&Value<'cid, 'mid, 'fid>], name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
+        unsafe {
+            &*(LLVMBuildGEP(self.as_raw(), ptr.as_raw(), indices.as_ptr() as *mut LLVMValueRef, indices.len() as c_uint, name.as_ptr()) as *const Value)
         }
     }
 

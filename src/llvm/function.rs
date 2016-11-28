@@ -15,6 +15,12 @@ pub struct Function<'cid, 'mid> {
 }
 
 impl<'cid, 'mid> Function<'cid, 'mid> {
+    pub fn label<'function>(&'function self) -> &'function FunctionLabel<'cid, 'mid> {
+        unsafe {
+            &*(self.as_raw() as *mut FunctionLabel)
+        }
+    }
+
     pub fn builder<'fid, 'function>(&'function mut self, id: Id<'fid>) -> FunctionBuilder<'cid, 'mid, 'fid, 'function> {
         FunctionBuilder {
             inner: self,
