@@ -8,12 +8,14 @@ use llvm_sys::core::{LLVMCreateFunctionPassManagerForModule, LLVMDisposePassMana
 use llvm_sys::core::{LLVMInitializeFunctionPassManager, LLVMFinalizeFunctionPassManager};
 use llvm_sys::core::LLVMRunFunctionPassManager;
 use llvm_sys::transforms::scalar::{
+    LLVMAddAggressiveDCEPass,
     LLVMAddBasicAliasAnalysisPass,
     LLVMAddGVNPass,
     LLVMAddInstructionCombiningPass,
     LLVMAddMemCpyOptPass,
     LLVMAddPromoteMemoryToRegisterPass,
     LLVMAddReassociatePass,
+    LLVMAddScalarReplAggregatesPass,
     LLVMAddCFGSimplificationPass
 };
 
@@ -33,6 +35,12 @@ impl<'mid> FunctionPassManager<'mid> {
     pub fn new<'cid, 'context>(module: &Module<'cid, 'context, 'mid>) -> Owned<FunctionPassManager<'mid>> {
         unsafe {
             Owned::from_raw(LLVMCreateFunctionPassManagerForModule(module.as_raw()) as *mut FunctionPassManager)
+        }
+    }
+
+    pub fn add_aggressive_dce(&mut self) {
+        unsafe {
+            LLVMAddAggressiveDCEPass(self.as_raw());
         }
     }
 
@@ -69,6 +77,12 @@ impl<'mid> FunctionPassManager<'mid> {
     pub fn add_reassociate(&mut self) {
         unsafe {
             LLVMAddReassociatePass(self.as_raw());
+        }
+    }
+
+    pub fn add_scalar_repl_aggregates(&mut self) {
+        unsafe {
+            LLVMAddScalarReplAggregatesPass(self.as_raw());
         }
     }
 
