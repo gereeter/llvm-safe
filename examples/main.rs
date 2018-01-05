@@ -1,5 +1,5 @@
 extern crate llvm_safe;
-#[macro_use] extern crate const_cstr;
+#[macro_use] extern crate const_cstr_fork;
 
 use llvm_safe::{id, llvm};
 

@@ -76,7 +76,8 @@ pub fn main() {
     println!("{:?}", &target_triple);
     let target = target::Target::from_triple(&target_triple).unwrap();
     let target_machine = target::TargetMachine::new(target, &target_triple, const_cstr!("generic").as_cstr(), const_cstr!("").as_cstr(), target::LLVMCodeGenOptLevel::LLVMCodeGenLevelNone, target::LLVMRelocMode::LLVMRelocDefault, target::LLVMCodeModel::LLVMCodeModelDefault);
-    println!("{:?}", target_machine.data_layout().as_string());
+    let data_layout = target_machine.data_layout();
+    println!("{:?}", data_layout.as_string());
 
     let stdout = io::stdout();
 
@@ -89,7 +90,7 @@ pub fn main() {
     id::with2(|context_id, module_id| {
         let context = Context::new(context_id);
         let mut module = Module::new(module_id, const_cstr!("mymodule").as_cstr(), &context);
-        module.set_data_layout(target_machine.data_layout());
+        module.set_data_layout(&data_layout);
         module.set_target_triple(&target_triple);
 
         let mut fpm = FunctionPassManager::new(&module);

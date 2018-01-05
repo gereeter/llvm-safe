@@ -1,0 +1,3 @@
+extern {
+    pub type Opaque;
+}

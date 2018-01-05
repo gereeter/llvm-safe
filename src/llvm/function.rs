@@ -6,12 +6,14 @@ use llvm_sys::core::*;
 use llvm_sys::analysis::*;
 
 use id::{Id, IdRef};
+use opaque::Opaque;
 
-use llvm::{Context, BasicBlock, Label, Value};
+use llvm::{Context, BasicBlock, Label, Value, FunctionType};
 
 pub struct Function<'cid, 'mid> {
     _context_id: IdRef<'cid>,
-    _module_id: IdRef<'mid>
+    _module_id: IdRef<'mid>,
+    _opaque: Opaque
 }
 
 impl<'cid, 'mid> Function<'cid, 'mid> {
@@ -21,10 +23,9 @@ impl<'cid, 'mid> Function<'cid, 'mid> {
         }
     }
 
-    pub fn builder<'fid, 'function>(&'function mut self, id: Id<'fid>) -> FunctionBuilder<'cid, 'mid, 'fid, 'function> {
-        FunctionBuilder {
-            inner: self,
-            _id: id
+    pub fn builder<'fid, 'function>(&'function mut self, _id: Id<'fid>) -> &'function mut FunctionBuilder<'cid, 'mid, 'fid, 'function> {
+        unsafe {
+            &mut *(self.as_raw() as *mut FunctionBuilder)
         }
     }
 
@@ -46,14 +47,15 @@ impl<'cid, 'mid> Function<'cid, 'mid> {
 }
 
 pub struct FunctionBuilder<'cid: 'function, 'mid: 'function, 'fid, 'function> {
-    inner: &'function mut Function<'cid, 'mid>,
-    _id: Id<'fid>
+    _inner: PhantomData<&'function mut Function<'cid, 'mid>>,
+    _id: Id<'fid>,
+    _opaque: Opaque
 }
 
 impl<'cid, 'mid, 'fid, 'function> FunctionBuilder<'cid, 'mid, 'fid, 'function> {
     pub fn append_basic_block(&mut self, name: &CStr, context: &Context<'cid>) -> (&'function Label<'fid>, &'function mut BasicBlock<'cid, 'mid, 'fid>) {
         unsafe {
-            let bb_ref = LLVMAppendBasicBlockInContext(context.as_raw(), self.inner.as_raw(), name.as_ptr());
+            let bb_ref = LLVMAppendBasicBlockInContext(context.as_raw(), self.as_raw(), name.as_ptr());
             (&*(bb_ref as *mut Label), &mut *(bb_ref as *mut BasicBlock))
         }
     }
@@ -63,8 +65,12 @@ impl<'cid, 'mid, 'fid, 'function> FunctionBuilder<'cid, 'mid, 'fid, 'function> {
             _context_id: IdRef::new(),
             _function_id: IdRef::new(),
             _function: PhantomData,
-            inner: unsafe { LLVMGetFirstParam(self.inner.as_raw()) }
+            inner: unsafe { LLVMGetFirstParam(self.as_raw()) }
         }
+    }
+
+    pub fn as_raw(&self) -> LLVMValueRef {
+        self as *const FunctionBuilder as *mut FunctionBuilder as LLVMValueRef
     }
 }
 
@@ -93,13 +99,21 @@ impl<'cid: 'function, 'mid: 'function, 'fid: 'function, 'function> Iterator for 
 
 pub struct FunctionLabel<'cid, 'mid> {
     _context_id: IdRef<'cid>,
-    _module_id: IdRef<'mid>
+    _module_id: IdRef<'mid>,
+    _opaque: Opaque
 }
 
 impl<'cid, 'mid> FunctionLabel<'cid, 'mid> {
     pub fn num_args(&self) -> usize {
         unsafe {
             LLVMCountParams(self.as_raw()) as usize
+        }
+    }
+
+    pub fn function_type(&self) -> &FunctionType<'cid> {
+        unsafe {
+            // FIXME: split into two functions
+            &*(LLVMGetElementType(LLVMTypeOf(self.as_raw())) as *mut FunctionType)
         }
     }
 

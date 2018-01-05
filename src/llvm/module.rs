@@ -3,15 +3,18 @@ use std::marker::PhantomData;
 
 use llvm_sys::prelude::*;
 use llvm_sys::core::*;
+use llvm_sys::target::LLVMSetModuleDataLayout;
 
 use id::{Id, IdRef};
+use opaque::Opaque;
 use owned::{Owned, DropInPlace};
 
-use llvm::{Context, Type, Function, FunctionLabel, DataLayout};
+use llvm::{Context, FunctionType, Type, Global, Function, FunctionLabel, DataLayout};
 
 pub struct Module<'cid: 'context, 'context, 'mid> {
     _id: Id<'mid>,
-    _context: PhantomData<&'context Context<'cid>>
+    _context: PhantomData<&'context Context<'cid>>,
+    _opaque: Opaque
 }
 
 impl<'cid, 'context, 'mid> DropInPlace for Module<'cid, 'context, 'mid> {
@@ -31,8 +34,7 @@ impl<'cid, 'context, 'mid> Module<'cid, 'context, 'mid> {
 
     pub fn set_data_layout(&mut self, layout: &DataLayout) {
         unsafe {
-            // TODO(3.9): Use LLVMSetModuleDataLayout
-            LLVMSetDataLayout(self.as_raw(), layout.as_string().as_ptr());
+            LLVMSetModuleDataLayout(self.as_raw(), layout.as_raw());
         }
     }
 
@@ -42,12 +44,9 @@ impl<'cid, 'context, 'mid> Module<'cid, 'context, 'mid> {
         }
     }
 
-    pub fn builder<'module>(&'module mut self) -> ModuleBuilder<'cid, 'mid, 'module> {
-        ModuleBuilder {
-            inner: self.as_raw(),
-            _marker: PhantomData,
-            _module_id: IdRef::new(),
-            _context_id: IdRef::new()
+    pub fn builder<'module>(&'module mut self) -> &'module mut ModuleBuilder<'cid, 'mid, 'module> {
+        unsafe {
+            &mut *(self as *mut Module as *mut ModuleBuilder)
         }
     }
 
@@ -57,22 +56,28 @@ impl<'cid, 'context, 'mid> Module<'cid, 'context, 'mid> {
 }
 
 pub struct ModuleBuilder<'cid: 'module, 'mid: 'module, 'module> {
-    inner: LLVMModuleRef,
     _marker: PhantomData<&'module mut ()>,
     _module_id: IdRef<'mid>,
-    _context_id: IdRef<'cid>
+    _context_id: IdRef<'cid>,
+    _opaque: Opaque
 }
 
 impl<'cid, 'mid, 'module> ModuleBuilder<'cid, 'mid, 'module> {
-    pub fn add_function(&mut self, name: &CStr, ty: &Type<'cid>) -> &'module mut Function<'cid, 'mid> {
+    pub fn add_global(&mut self, name: &CStr, ty: &Type<'cid>) -> &'module mut Global<'cid, 'mid> {
         unsafe {
-            &mut *(LLVMAddFunction(self.inner, name.as_ptr(), ty.as_raw()) as *mut Function)
+            &mut *(LLVMAddGlobal(self.as_raw(), ty.as_raw(), name.as_ptr()) as *mut Global)
+        }
+    }
+
+    pub fn add_function(&mut self, name: &CStr, ty: &FunctionType<'cid>) -> &'module mut Function<'cid, 'mid> {
+        unsafe {
+            &mut *(LLVMAddFunction(self.as_raw(), name.as_ptr(), ty.as_raw()) as *mut Function)
         }
     }
 
     pub fn get_named_function(&self, name: &CStr) -> Option<&'module FunctionLabel<'cid, 'mid>> {
         unsafe {
-            let old = LLVMGetNamedFunction(self.inner, name.as_ptr());
+            let old = LLVMGetNamedFunction(self.as_raw(), name.as_ptr());
             if old.is_null() {
                 None
             } else {
@@ -81,12 +86,13 @@ impl<'cid, 'mid, 'module> ModuleBuilder<'cid, 'mid, 'module> {
         }
     }
 
-    pub fn reborrow<'a>(&'a mut self) -> ModuleBuilder<'cid, 'mid, 'a> {
-        ModuleBuilder {
-            inner: self.inner,
-            _marker: PhantomData,
-            _module_id: IdRef::new(),
-            _context_id: IdRef::new()
+    pub fn reborrow<'a>(&'a mut self) -> &'a mut ModuleBuilder<'cid, 'mid, 'a> {
+        unsafe {
+            &mut *(self.as_raw() as *mut ModuleBuilder)
         }
+    }
+
+    pub fn as_raw(&self) -> LLVMModuleRef {
+        self as *const ModuleBuilder as *mut ModuleBuilder as LLVMModuleRef
     }
 }

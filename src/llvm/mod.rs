@@ -7,7 +7,8 @@ pub use self::value::Value;
 pub use self::phi::Phi;
 pub use self::alloca::Alloca;
 pub use self::constant::Constant;
-pub use self::ty::Type;
+pub use self::global::Global;
+pub use self::ty::{Type, FunctionType};
 pub use self::target::{Target, TargetMachine, DataLayout};
 pub use self::pass_manager::{FunctionPassManager, InitializedFunctionPassManager};
 
@@ -26,6 +27,7 @@ pub mod constant;
 pub mod ty;
 pub mod target;
 pub mod pass_manager;
+pub mod global;
 
 //
 // TODO: Error Checking

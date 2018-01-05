@@ -4,9 +4,8 @@ version = "0.1.0"
 authors = ["Jonathan S <gereeter+code@gmail.com>"]
 
 [dependencies]
-libc = "0.2.16"
-llvm-sys = "0.4.0"
+libc = "0.2"
+llvm-sys = ">= 39.0.0, < 51.0.0"
 
 [dev-dependencies]
-const-cstr = "0.2.1"
-
+const-cstr-fork = "0.2.2"

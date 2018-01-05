@@ -7,12 +7,14 @@ use llvm_sys::prelude::*;
 use llvm_sys::core::*;
 pub use llvm_sys::{LLVMIntPredicate, LLVMRealPredicate};
 
+use opaque::Opaque;
 use owned::{Owned, DropInPlace};
 
 use llvm::{Context, BasicBlock, Label, Value, Phi, Alloca, Type};
 
 pub struct Builder<'cid: 'context, 'context> {
-    _context: PhantomData<&'context Context<'cid>>
+    _context: PhantomData<&'context Context<'cid>>,
+    _opaque: Opaque
 }
 
 impl<'cid, 'context> DropInPlace for Builder<'cid, 'context> {
@@ -44,7 +46,8 @@ impl<'cid, 'context> Builder<'cid, 'context> {
 
 pub struct PositionedBuilder<'cid: 'context, 'context: 'block, 'mid: 'block, 'fid: 'block, 'block> {
     _block: PhantomData<&'block mut BasicBlock<'cid, 'mid, 'fid>>,
-    _builder: PhantomData<Builder<'cid, 'context>>
+    _builder: PhantomData<Builder<'cid, 'context>>,
+    _opaque: Opaque
 }
 
 impl<'cid, 'context, 'mid, 'fid, 'block> PositionedBuilder<'cid, 'context, 'mid, 'fid, 'block> {
@@ -315,6 +318,13 @@ impl<'cid, 'context, 'mid, 'fid, 'block> PositionedBuilder<'cid, 'context, 'mid,
     pub fn ret_void(&mut self) {
         unsafe {
             LLVMBuildRetVoid(self.as_raw());
+        }
+    }
+
+
+    pub fn unreachable(&mut self) {
+        unsafe {
+            LLVMBuildUnreachable(self.as_raw());
         }
     }
 

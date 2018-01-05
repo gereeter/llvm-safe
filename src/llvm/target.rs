@@ -6,12 +6,13 @@ use llvm_sys::target_machine::{LLVMTargetRef, LLVMGetTargetFromTriple, LLVMGetDe
 use llvm_sys::target_machine::{LLVMTargetMachineRef, LLVMCreateTargetMachine, LLVMDisposeTargetMachine};
 
 use llvm_sys::target::{LLVMTargetDataRef, LLVMCopyStringRepOfTargetData, LLVMDisposeTargetData, LLVMCreateTargetData};
-use llvm_sys::target_machine::LLVMGetTargetMachineData;
+use llvm_sys::target_machine::LLVMCreateTargetDataLayout;
 
 pub use llvm_sys::target_machine::LLVMCodeGenFileType;
 use llvm_sys::target_machine::LLVMTargetMachineEmitToFile;
 
 use ffi::MallocCStr;
+use opaque::Opaque;
 use owned::{Owned, DropInPlace};
 
 use llvm::module::Module;
@@ -23,7 +24,7 @@ pub fn default_triple() -> Owned<MallocCStr> {
 }
 
 pub struct Target {
-    _priv: ()
+    _opaque: Opaque
 }
 
 impl Target {
@@ -45,7 +46,7 @@ impl Target {
 }
 
 pub struct TargetMachine {
-    _priv: ()
+    _opaque: Opaque
 }
 
 impl DropInPlace for TargetMachine {
@@ -72,10 +73,9 @@ impl TargetMachine {
         }
     }
 
-    pub fn data_layout(&self) -> &DataLayout {
+    pub fn data_layout(&self) -> Owned<DataLayout> {
         unsafe {
-            // TODO(3.9): Replace with LLVMCreateTargetDataLayout (returning Owned)
-            &*(LLVMGetTargetMachineData(self.as_raw()) as *mut DataLayout)
+            Owned::from_raw(LLVMCreateTargetDataLayout(self.as_raw()) as *mut DataLayout)
         }
     }
 
@@ -85,7 +85,7 @@ impl TargetMachine {
 }
 
 pub struct DataLayout {
-    _priv: ()
+    _opaque: Opaque
 }
 
 impl DropInPlace for DataLayout {

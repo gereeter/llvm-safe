@@ -14,7 +14,7 @@ pub struct Owned<T: DropInPlace + ?Sized> {
 impl<T: DropInPlace + ?Sized> Drop for Owned<T> {
     fn drop(&mut self) {
         unsafe {
-            self.value.get_mut().drop_in_place();
+            self.value.as_mut().drop_in_place();
         }
     }
 }
@@ -23,7 +23,7 @@ impl<T: DropInPlace + ?Sized> Deref for Owned<T> {
     type Target = T;
     fn deref(&self) -> &T {
         unsafe {
-            self.value.get()
+            self.value.as_ref()
         }
     }
 }
@@ -31,7 +31,7 @@ impl<T: DropInPlace + ?Sized> Deref for Owned<T> {
 impl<T: DropInPlace + ?Sized> DerefMut for Owned<T> {
     fn deref_mut(&mut self) -> &mut T {
         unsafe {
-            self.value.get_mut()
+            self.value.as_mut()
         }
     }
 }
@@ -45,7 +45,7 @@ impl<T: DropInPlace + ?Sized + fmt::Debug> fmt::Debug for Owned<T> {
 impl<T: DropInPlace + ?Sized> Owned<T> {
     pub unsafe fn from_raw(ptr: *mut T) -> Owned<T> {
         Owned {
-            value: Unique::new(ptr)
+            value: Unique::new_unchecked(ptr)
         }
     }
 }

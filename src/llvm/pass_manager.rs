@@ -1,6 +1,7 @@
 use std::marker::PhantomData;
 
 use id::IdRef;
+use opaque::Opaque;
 use owned::{DropInPlace, Owned};
 
 use llvm_sys::prelude::LLVMPassManagerRef;
@@ -22,7 +23,8 @@ use llvm_sys::transforms::scalar::{
 use llvm::{Function, Module, ModuleBuilder};
 
 pub struct FunctionPassManager<'mid> {
-    _module_id: IdRef<'mid>
+    _module_id: IdRef<'mid>,
+    _opaque: Opaque
 }
 
 impl<'mid> DropInPlace for FunctionPassManager<'mid> {
