@@ -4,21 +4,21 @@ use std::iter::repeat;
 
 use llvm_safe::id;
 use llvm_safe::llvm;
-use llvm_safe::llvm::{Constant, Type, Function, Value};
+use llvm_safe::llvm::{Constant, Type, Function, FunctionType, Value};
 use llvm_safe::llvm::LLVMRealPredicate;
 
 use kaleidoscope_lib::ast;
 
 pub struct Context<'cid: 'context, 'context: 'module, 'mid: 'module, 'module> {
     context: &'context llvm::Context<'cid>,
-    module: llvm::ModuleBuilder<'cid, 'mid, 'module>
+    module: &'module mut llvm::ModuleBuilder<'cid, 'mid, 'module>
 }
 
 impl<'cid, 'context, 'mid, 'module> Context<'cid, 'context, 'mid, 'module> {
-    pub fn new(context: &'context llvm::Context<'cid>, module: llvm::ModuleBuilder<'cid, 'mid, 'module>) -> Self {
+    pub fn new<'rmodule>(context: &'context llvm::Context<'cid>, module: &'module mut llvm::ModuleBuilder<'cid, 'mid, 'rmodule>) -> Self {
         Context {
             context: context,
-            module: module
+            module: module.reborrow()
         }
     }
 
@@ -97,9 +97,9 @@ impl<'cid, 'context, 'mid, 'module> Context<'cid, 'context, 'mid, 'module> {
 
         let f64_type = Type::f64(self.context);
         let arg_types = repeat(f64_type).take(proto.args.len()).collect::<Vec<_>>();
-        let func_type = Type::function(&arg_types, f64_type);
+        let func_type = FunctionType::new(&arg_types, f64_type, false);
 
-        let mut function = self.module.add_function(&c_name, func_type);
+        let function = self.module.add_function(&c_name, func_type);
 
         id::with(|fid| {
             for (param, arg_name) in function.builder(fid).params().zip(proto.args.iter()) {
@@ -112,7 +112,7 @@ impl<'cid, 'context, 'mid, 'module> Context<'cid, 'context, 'mid, 'module> {
     }
 
     pub fn trans_func(&mut self, func: &ast::Function, builder: &mut llvm::Builder<'cid, 'context>) -> Result<&'module mut Function<'cid, 'mid>, &'static str> {
-        let mut function = try!(self.trans_proto(&func.proto));
+        let function = try!(self.trans_proto(&func.proto));
         try!(id::with(|function_id| {
             let mut function_builder = function.builder(function_id);
             let named_values = func.proto.args.iter().map(|s| &**s).zip(function_builder.params()).collect();

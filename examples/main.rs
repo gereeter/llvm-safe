@@ -7,16 +7,16 @@ fn main() {
     id::with2(|context_id, module_id| {
         let context = llvm::Context::new(context_id);
         let mut module = llvm::Module::new(module_id, const_cstr!("mymodule").as_cstr(), &context);
-        let mut module_builder = module.builder();
+        let module_builder = module.builder();
 
         let i32_ty = llvm::Type::i32(&context);
-        let func_ty = llvm::Type::function(&[i32_ty], i32_ty);
+        let func_ty = llvm::FunctionType::new(&[i32_ty], i32_ty, false);
         let mut builder = llvm::Builder::new(&context);
 
         {
             let function = module_builder.add_function(const_cstr!("square").as_cstr(), func_ty);
             id::with(|function_id| {
-                let mut function_builder = function.builder(function_id);
+                let function_builder = function.builder(function_id);
                 let arg = function_builder.params().next().unwrap();
 
                 let (_, entry) = function_builder.append_basic_block(const_cstr!("entry").as_cstr(), &context);
@@ -32,7 +32,7 @@ fn main() {
         {
             let function = module_builder.add_function(const_cstr!("jumpy").as_cstr(), func_ty);
             id::with(|function_id| {
-                let mut function_builder = function.builder(function_id);
+                let function_builder = function.builder(function_id);
                 let arg = function_builder.params().next().unwrap();
                 let (_, entry) = function_builder.append_basic_block(const_cstr!("entry").as_cstr(), &context);
                 let (exit_label, exit) = function_builder.append_basic_block(const_cstr!("exit").as_cstr(), &context);
@@ -47,10 +47,10 @@ fn main() {
         {
             let function = module_builder.add_function(const_cstr!("consts").as_cstr(), func_ty);
             id::with(|function_id| {
-                let mut function_builder = function.builder(function_id);
+                let function_builder = function.builder(function_id);
                 let arg = function_builder.params().next().unwrap();
                 let (_, entry) = function_builder.append_basic_block(const_cstr!("entry").as_cstr(), &context);
-                let mut builder = builder.position_at_end(entry);
+                let builder = builder.position_at_end(entry);
 
                 let const_6 = builder.mul(llvm::Constant::i32(2, &context).as_value(), llvm::Constant::i32(3, &context).as_value(), const_cstr!("const_6").as_cstr());
                 let xplus4 = builder.add(arg, llvm::Constant::i32(4, &context).as_value(), const_cstr!("xplus4").as_cstr());
@@ -64,28 +64,28 @@ fn main() {
         {
             let function = module_builder.add_function(const_cstr!("abs").as_cstr(), func_ty);
             id::with(|function_id| {
-                let mut function_builder = function.builder(function_id);
+                let function_builder = function.builder(function_id);
                 let arg = function_builder.params().next().unwrap();
                 let (entry_label, entry) = function_builder.append_basic_block(const_cstr!("entry").as_cstr(), &context);
                 let (negative_label, negative) = function_builder.append_basic_block(const_cstr!("negative").as_cstr(), &context);
                 let (exit_label, exit) = function_builder.append_basic_block(const_cstr!("exit").as_cstr(), &context);
 
                 {
-                    let mut builder = builder.position_at_end(entry);
+                    let builder = builder.position_at_end(entry);
                     let cmp = builder.icmp(llvm::LLVMIntPredicate::LLVMIntSLT, arg, llvm::Constant::i32(0, &context).as_value(), const_cstr!("isneg").as_cstr());
                     builder.cond_br(cmp, negative_label, exit_label);
                 }
 
                 let negated = {
-                    let mut builder = builder.position_at_end(negative);
+                    let builder = builder.position_at_end(negative);
                     let negated = builder.neg(arg, const_cstr!("negated").as_cstr());
                     builder.br(exit_label);
                     negated
                 };
 
                 {
-                    let mut builder = builder.position_at_end(exit);
-                    let mut phi = builder.phi(i32_ty, const_cstr!("phi").as_cstr());
+                    let builder = builder.position_at_end(exit);
+                    let phi = builder.phi(i32_ty, const_cstr!("phi").as_cstr());
                     phi.add_incoming_branch(negated, negative_label);
                     phi.add_incoming_branch(arg, entry_label);
                     builder.ret(phi.as_value());

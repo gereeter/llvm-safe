@@ -20,7 +20,7 @@ mod trans;
 fn handle_definition<'cid: 'context, 'context, 'mid: 'module + 'fpm, 'module, 'fpm, I: Iterator<Item=Token>>(iter: &mut Peekable<I>, context: &'context Context<'cid>, module: &mut ModuleBuilder<'cid, 'mid, 'module>, fpm: &mut InitializedFunctionPassManager<'mid, 'module, 'fpm>, builder: &mut Builder<'cid, 'context>) {
     match parse_definition(iter) {
         Ok(def) => {
-            match trans::Context::new(context, module.reborrow()).trans_func(&def, builder) {
+            match trans::Context::new(context, module).trans_func(&def, builder) {
                 Ok(function) => {
                     println!("Read a function definition:");
                     fpm.run(function);
@@ -36,7 +36,7 @@ fn handle_definition<'cid: 'context, 'context, 'mid: 'module + 'fpm, 'module, 'f
 fn handle_extern<'cid: 'context, 'context, 'mid: 'module, 'module, I: Iterator<Item=Token>>(iter: &mut Peekable<I>, context: &'context Context<'cid>, module: &mut ModuleBuilder<'cid, 'mid, 'module>) {
     match parse_extern(iter) {
         Ok(proto) => {
-            match trans::Context::new(context, module.reborrow()).trans_proto(&proto) {
+            match trans::Context::new(context, module).trans_proto(&proto) {
                 Ok(function) => {
                     println!("Read an extern:");
                     function.dump();
@@ -51,7 +51,7 @@ fn handle_extern<'cid: 'context, 'context, 'mid: 'module, 'module, I: Iterator<I
 fn handle_top_level_expr<'cid: 'context, 'context, 'mid: 'module + 'fpm, 'module, 'fpm, I: Iterator<Item=Token>>(iter: &mut Peekable<I>, context: &'context Context<'cid>, module: &mut ModuleBuilder<'cid, 'mid, 'module>, fpm: &mut InitializedFunctionPassManager<'mid, 'module, 'fpm>, builder: &mut Builder<'cid, 'context>) {
     match parse_top_level_expr(iter) {
         Ok(def) => {
-            match trans::Context::new(context, module.reborrow()).trans_func(&def, builder) {
+            match trans::Context::new(context, module).trans_func(&def, builder) {
                 Ok(function) => {
                     println!("Read a top level expression:");
                     fpm.run(function);
