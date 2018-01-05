@@ -8,7 +8,7 @@ use llvm_sys::analysis::*;
 use id::{Id, IdRef};
 use opaque::Opaque;
 
-use llvm::{Context, BasicBlock, Label, Value, FunctionType};
+use llvm::{Context, BasicBlock, Label, Value, Type, FunctionType};
 
 pub struct Function<'cid, 'mid> {
     _context_id: IdRef<'cid>,
@@ -110,10 +110,10 @@ impl<'cid, 'mid> FunctionLabel<'cid, 'mid> {
         }
     }
 
-    pub fn function_type(&self) -> &FunctionType<'cid> {
+    pub fn function_type(&self) -> &Type<'cid, FunctionType> {
         unsafe {
-            // FIXME: split into two functions
-            &*(LLVMGetElementType(LLVMTypeOf(self.as_raw())) as *mut FunctionType)
+            // FIXME: return the pointer type?
+            Type::of_value(self.as_value()).cast_unchecked().pointee_ty()
         }
     }
 

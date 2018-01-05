@@ -10,7 +10,7 @@ fn main() {
         let module_builder = module.builder();
 
         let i32_ty = llvm::Type::i32(&context);
-        let func_ty = llvm::FunctionType::new(&[i32_ty], i32_ty, false);
+        let func_ty = llvm::Type::function(&[i32_ty], i32_ty, false);
         let mut builder = llvm::Builder::new(&context);
 
         {

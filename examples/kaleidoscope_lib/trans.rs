@@ -4,7 +4,7 @@ use std::iter::repeat;
 
 use llvm_safe::id;
 use llvm_safe::llvm;
-use llvm_safe::llvm::{Constant, Type, Function, FunctionType, Value};
+use llvm_safe::llvm::{Constant, Type, Function, Value};
 use llvm_safe::llvm::LLVMRealPredicate;
 
 use kaleidoscope_lib::ast;
@@ -97,7 +97,7 @@ impl<'cid, 'context, 'mid, 'module> Context<'cid, 'context, 'mid, 'module> {
 
         let f64_type = Type::f64(self.context);
         let arg_types = repeat(f64_type).take(proto.args.len()).collect::<Vec<_>>();
-        let func_type = FunctionType::new(&arg_types, f64_type, false);
+        let func_type = Type::function(&arg_types, f64_type, false);
 
         let function = self.module.add_function(&c_name, func_type);
 

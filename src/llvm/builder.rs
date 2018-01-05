@@ -201,61 +201,61 @@ impl<'cid, 'context, 'mid, 'fid, 'block> PositionedBuilder<'cid, 'context, 'mid,
         }
     }
 
-    pub fn trunc(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
+    pub fn trunc<SubTy>(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid, SubTy>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
         unsafe {
             &*(LLVMBuildTrunc(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
         }
     }
 
-    pub fn fp_trunc(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
+    pub fn fp_trunc<SubTy>(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid, SubTy>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
         unsafe {
             &*(LLVMBuildFPTrunc(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
         }
     }
 
-    pub fn zext(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
+    pub fn zext<SubTy>(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid, SubTy>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
         unsafe {
             &*(LLVMBuildZExt(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
         }
     }
 
-    pub fn sext(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
+    pub fn sext<SubTy>(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid, SubTy>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
         unsafe {
             &*(LLVMBuildSExt(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
         }
     }
 
-    pub fn fp_ext(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
+    pub fn fp_ext<SubTy>(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid, SubTy>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
         unsafe {
             &*(LLVMBuildFPExt(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
         }
     }
 
-    pub fn fp_to_ui(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
+    pub fn fp_to_ui<SubTy>(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid, SubTy>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
         unsafe {
             &*(LLVMBuildFPToUI(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
         }
     }
 
-    pub fn fp_to_si(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
+    pub fn fp_to_si<SubTy>(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid, SubTy>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
         unsafe {
             &*(LLVMBuildFPToSI(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
         }
     }
 
-    pub fn ui_to_fp(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
+    pub fn ui_to_fp<SubTy>(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid, SubTy>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
         unsafe {
             &*(LLVMBuildUIToFP(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
         }
     }
 
-    pub fn si_to_fp(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
+    pub fn si_to_fp<SubTy>(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid, SubTy>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
         unsafe {
             &*(LLVMBuildSIToFP(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
         }
     }
 
-    pub fn bitcast(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
+    pub fn bitcast<SubTy>(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid, SubTy>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
         unsafe {
             &*(LLVMBuildBitCast(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
         }
@@ -273,13 +273,13 @@ impl<'cid, 'context, 'mid, 'fid, 'block> PositionedBuilder<'cid, 'context, 'mid,
         }
     }
 
-    pub fn alloca(&mut self, ty: &Type<'cid>, name: &CStr) -> &'block mut Alloca<'cid, 'mid, 'fid> {
+    pub fn alloca<SubTy>(&mut self, ty: &Type<'cid, SubTy>, name: &CStr) -> &'block mut Alloca<'cid, 'mid, 'fid> {
         unsafe {
             &mut *(LLVMBuildAlloca(self.as_raw(), ty.as_raw(), name.as_ptr()) as *mut Alloca)
         }
     }
 
-    pub fn array_alloca(&mut self, ty: &Type<'cid>, len: &Value<'cid, 'mid, 'fid>, name: &CStr) -> &'block mut Alloca<'cid, 'mid, 'fid> {
+    pub fn array_alloca<SubTy>(&mut self, ty: &Type<'cid, SubTy>, len: &Value<'cid, 'mid, 'fid>, name: &CStr) -> &'block mut Alloca<'cid, 'mid, 'fid> {
         unsafe {
             &mut *(LLVMBuildArrayAlloca(self.as_raw(), ty.as_raw(), len.as_raw(), name.as_ptr()) as *mut Alloca)
         }
@@ -297,7 +297,7 @@ impl<'cid, 'context, 'mid, 'fid, 'block> PositionedBuilder<'cid, 'context, 'mid,
         }
     }
 
-    pub fn phi(&mut self, ty: &Type<'cid>, name: &CStr) -> &'block mut Phi<'cid, 'mid, 'fid> {
+    pub fn phi<SubTy>(&mut self, ty: &Type<'cid, SubTy>, name: &CStr) -> &'block mut Phi<'cid, 'mid, 'fid> {
         unsafe {
             &mut *(LLVMBuildPhi(self.as_raw(), ty.as_raw(), name.as_ptr()) as *mut Phi)
         }

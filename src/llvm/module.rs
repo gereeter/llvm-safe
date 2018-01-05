@@ -63,13 +63,13 @@ pub struct ModuleBuilder<'cid: 'module, 'mid: 'module, 'module> {
 }
 
 impl<'cid, 'mid, 'module> ModuleBuilder<'cid, 'mid, 'module> {
-    pub fn add_global(&mut self, name: &CStr, ty: &Type<'cid>) -> &'module mut Global<'cid, 'mid> {
+    pub fn add_global<SubTy>(&mut self, name: &CStr, ty: &Type<'cid, SubTy>) -> &'module mut Global<'cid, 'mid> {
         unsafe {
             &mut *(LLVMAddGlobal(self.as_raw(), ty.as_raw(), name.as_ptr()) as *mut Global)
         }
     }
 
-    pub fn add_function(&mut self, name: &CStr, ty: &FunctionType<'cid>) -> &'module mut Function<'cid, 'mid> {
+    pub fn add_function(&mut self, name: &CStr, ty: &Type<'cid, FunctionType>) -> &'module mut Function<'cid, 'mid> {
         unsafe {
             &mut *(LLVMAddFunction(self.as_raw(), name.as_ptr(), ty.as_raw()) as *mut Function)
         }

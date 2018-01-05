@@ -6,7 +6,7 @@ use libc::{c_char, c_uint, c_int};
 use id::IdRef;
 use opaque::Opaque;
 
-use llvm::{Context, Type, Value};
+use llvm::{Context, Type, PointerType, Value};
 
 pub struct Constant<'cid> {
     _context: IdRef<'cid>,
@@ -38,13 +38,13 @@ impl<'cid> Constant<'cid> {
         }
     }
 
-    pub fn null<'ctx>(ty: &'ctx Type<'cid>) -> &'ctx Constant<'cid> {
+    pub fn null<'ctx, SubTy>(ty: &'ctx Type<'cid, SubTy>) -> &'ctx Constant<'cid> {
         unsafe {
             &*(LLVMConstNull(ty.as_raw()) as *mut Constant)
         }
     }
 
-    pub fn null_pointer<'ctx>(ty: &'ctx Type<'cid>) -> &'ctx Constant<'cid> {
+    pub fn null_pointer<'ctx, PointeeTy>(ty: &'ctx Type<'cid, PointerType<PointeeTy>>) -> &'ctx Constant<'cid> {
         unsafe {
             &*(LLVMConstPointerNull(ty.as_raw()) as *mut Constant)
         }
