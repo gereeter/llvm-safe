@@ -137,14 +137,10 @@ impl<'cid, ElementTy> Type<'cid, ArrayType<ElementTy>> {
     }
 }
 
-// TODO: Consider blanket impls?
 pub unsafe trait Upcast<Target> { }
-unsafe impl Upcast<AnyType> for AnyType { }
-unsafe impl<PointeeTy> Upcast<AnyType> for PointerType<PointeeTy> { }
+unsafe impl<T> Upcast<AnyType> for T { }
 unsafe impl<GeneralPointeeTy, PointeeTy: Upcast<GeneralPointeeTy>> Upcast<PointerType<GeneralPointeeTy>> for PointerType<PointeeTy> { }
-unsafe impl<ElementTy> Upcast<AnyType> for ArrayType<ElementTy> { }
 unsafe impl<GeneralElementTy, ElementTy: Upcast<GeneralElementTy>> Upcast<ArrayType<GeneralElementTy>> for ArrayType<ElementTy> { }
-unsafe impl Upcast<AnyType> for FunctionType { }
 
 pub enum AnyType { }
 pub struct PointerType<PointeeTy> {
