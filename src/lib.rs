@@ -1,4 +1,4 @@
-#![feature(unique, extern_types)]
+#![feature(ptr_internals, extern_types)]
 
 extern crate llvm_sys;
 extern crate libc;

@@ -1,5 +1,3 @@
-use std::ffi::CStr;
-
 use llvm_sys::prelude::*;
 use llvm_sys::core::*;
 
@@ -15,9 +13,9 @@ pub struct Value<'cid, 'mid, 'fid> {
 
 impl<'cid, 'mid, 'fid> Value<'cid, 'mid, 'fid> {
     // FIXME: Should this require a mutable reference?
-    pub fn set_name(&self, name: &CStr) {
+    pub fn set_name(&self, name: &str) {
         unsafe {
-            LLVMSetValueName(self.as_raw(), name.as_ptr());
+            LLVMSetValueName2(self.as_raw(), name.as_ptr() as *const std::os::raw::c_char, name.len());
         }
     }
 

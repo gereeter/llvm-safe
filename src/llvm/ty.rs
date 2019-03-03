@@ -30,36 +30,6 @@ impl<'cid> Type<'cid, AnyType> {
         }
     }
 
-    pub fn i1<'ctx>(context: &'ctx Context<'cid>) -> &'ctx Type<'cid, AnyType> {
-        unsafe {
-            &*(LLVMInt1TypeInContext(context.as_raw()) as *mut Type<AnyType>)
-        }
-    }
-
-    pub fn i8<'ctx>(context: &'ctx Context<'cid>) -> &'ctx Type<'cid, AnyType> {
-        unsafe {
-            &*(LLVMInt8TypeInContext(context.as_raw()) as *mut Type<AnyType>)
-        }
-    }
-
-    pub fn i16<'ctx>(context: &'ctx Context<'cid>) -> &'ctx Type<'cid, AnyType> {
-        unsafe {
-            &*(LLVMInt16TypeInContext(context.as_raw()) as *mut Type<AnyType>)
-        }
-    }
-
-    pub fn i32<'ctx>(context: &'ctx Context<'cid>) -> &'ctx Type<'cid, AnyType> {
-        unsafe {
-            &*(LLVMInt32TypeInContext(context.as_raw()) as *mut Type<AnyType>)
-        }
-    }
-
-    pub fn i64<'ctx>(context: &'ctx Context<'cid>) -> &'ctx Type<'cid, AnyType> {
-        unsafe {
-            &*(LLVMInt64TypeInContext(context.as_raw()) as *mut Type<AnyType>)
-        }
-    }
-
     pub fn void<'ctx>(context: &'ctx Context<'cid>) -> &'ctx Type<'cid, AnyType> {
         unsafe {
             &*(LLVMVoidTypeInContext(context.as_raw()) as *mut Type<AnyType>)
@@ -113,6 +83,38 @@ impl<'cid, SubType> Type<'cid, SubType> {
     }
 }
 
+impl<'cid> Type<'cid, IntegerType> {
+    pub fn i1<'ctx>(context: &'ctx Context<'cid>) -> &'ctx Type<'cid, IntegerType> {
+        unsafe {
+            &*(LLVMInt1TypeInContext(context.as_raw()) as *mut Type<IntegerType>)
+        }
+    }
+
+    pub fn i8<'ctx>(context: &'ctx Context<'cid>) -> &'ctx Type<'cid, IntegerType> {
+        unsafe {
+            &*(LLVMInt8TypeInContext(context.as_raw()) as *mut Type<IntegerType>)
+        }
+    }
+
+    pub fn i16<'ctx>(context: &'ctx Context<'cid>) -> &'ctx Type<'cid, IntegerType> {
+        unsafe {
+            &*(LLVMInt16TypeInContext(context.as_raw()) as *mut Type<IntegerType>)
+        }
+    }
+
+    pub fn i32<'ctx>(context: &'ctx Context<'cid>) -> &'ctx Type<'cid, IntegerType> {
+        unsafe {
+            &*(LLVMInt32TypeInContext(context.as_raw()) as *mut Type<IntegerType>)
+        }
+    }
+
+    pub fn i64<'ctx>(context: &'ctx Context<'cid>) -> &'ctx Type<'cid, IntegerType> {
+        unsafe {
+            &*(LLVMInt64TypeInContext(context.as_raw()) as *mut Type<IntegerType>)
+        }
+    }
+}
+
 impl<'cid> Type<'cid, FunctionType> {
     pub fn is_var_arg(&self) -> bool {
         unsafe {
@@ -150,3 +152,4 @@ pub struct ArrayType<ElementTy> {
     _marker: PhantomData<ElementTy>
 }
 pub enum FunctionType { }
+pub enum IntegerType { }

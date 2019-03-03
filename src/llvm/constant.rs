@@ -6,7 +6,7 @@ use libc::{c_char, c_uint, c_int};
 use id::IdRef;
 use opaque::Opaque;
 
-use llvm::{Context, Type, PointerType, Value};
+use llvm::{Context, Type, IntegerType, PointerType, Value};
 
 pub struct Constant<'cid> {
     _context: IdRef<'cid>,
@@ -15,20 +15,20 @@ pub struct Constant<'cid> {
 
 impl<'cid> Constant<'cid> {
     pub fn bool<'ctx>(value: bool, context: &'ctx Context<'cid>) -> &'ctx Constant<'cid> {
-        unsafe {
-            &*(LLVMConstInt(Type::i1(context).as_raw(), value as u64, 0) as *mut Constant)
-        }
+        Constant::integer(value as u64, Type::i1(context), false)
     }
 
     pub fn i8<'ctx>(value: i8, context: &'ctx Context<'cid>) -> &'ctx Constant<'cid> {
-        unsafe {
-            &*(LLVMConstInt(Type::i8(context).as_raw(), value as u64, 0) as *mut Constant)
-        }
+        Constant::integer(value as u64, Type::i8(context), false)
     }
 
     pub fn i32<'ctx>(value: i32, context: &'ctx Context<'cid>) -> &'ctx Constant<'cid> {
+        Constant::integer(value as u64, Type::i32(context), false)
+    }
+
+    pub fn integer<'ctx>(value: u64, ty: &'ctx Type<'cid, IntegerType>, signed: bool) -> &'ctx Constant<'cid> {
         unsafe {
-            &*(LLVMConstInt(Type::i32(context).as_raw(), value as u64, 0) as *mut Constant)
+            &*(LLVMConstInt(ty.as_raw(), value, signed as c_int) as *mut Constant)
         }
     }
 

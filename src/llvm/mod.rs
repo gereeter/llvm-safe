@@ -8,7 +8,7 @@ pub use self::phi::Phi;
 pub use self::alloca::Alloca;
 pub use self::constant::Constant;
 pub use self::global::Global;
-pub use self::ty::{Type, FunctionType, PointerType, ArrayType, AnyType};
+pub use self::ty::{Type, FunctionType, IntegerType, PointerType, ArrayType, AnyType};
 pub use self::target::{Target, TargetMachine, DataLayout};
 pub use self::pass_manager::{FunctionPassManager, InitializedFunctionPassManager};
 
