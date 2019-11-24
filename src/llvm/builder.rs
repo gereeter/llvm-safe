@@ -63,14 +63,14 @@ macro_rules! binop_impl {
 }
 
 macro_rules! cast_impl {
-    ( $(#[$doc:meta])* $rust_name:ident, $c_name:ident )  => {
+    ( $($(#[$doc:meta])* $rust_name:ident, $c_name:ident)* )  => { $(
         $(#[$doc])*
         pub fn $rust_name(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
             unsafe {
                 &*($c_name(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
             }
         }
-    };
+    )* };
 }
 
 impl<'cid, 'context, 'mid, 'fid, 'block> PositionedBuilder<'cid, 'context, 'mid, 'fid, 'block> {
@@ -365,105 +365,332 @@ binop_impl!{
     xor, LLVMBuildXor
 }
 
+    /// Creates a [`sub 0, <value>`][langref] instruction.
+    ///
+    /// Corresponds to `CreateNeg` ([C++][C++]) and `LLVMBuildNeg` ([C][C], [Rust][Rust]).
+    ///
+    /// [langref]: https://releases.llvm.org/8.0.1/docs/LangRef.html#sub-instruction
+    /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#afd7e0f4bb499af728f9325e41afc344c
+    /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#gaf748025627b03f4f2659b006b127b758
+    /// [Rust]: LLVMBuildNeg
     pub fn neg(&mut self, value: &Value<'cid, 'mid, 'fid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
         unsafe {
             &*(LLVMBuildNeg(self.as_raw(), value.as_raw(), name.as_ptr()) as *const Value)
         }
     }
 
+    /// Creates an [`fneg`][langref] instruction.
+    ///
+    /// Corresponds to `CreateFNeg` ([C++][C++]) and `LLVMBuildFNeg` ([C][C], [Rust][Rust]).
+    ///
+    /// [langref]: https://releases.llvm.org/8.0.1/docs/LangRef.html#fneg-instruction
+    /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#afadf0ed4391eedf48ea806b83e7d6263
+    /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#ga93de3da5c9ab84b1fb2a167b96e37e1a
+    /// [Rust]: LLVMBuildFNeg
     pub fn fneg(&mut self, value: &Value<'cid, 'mid, 'fid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
         unsafe {
             &*(LLVMBuildFNeg(self.as_raw(), value.as_raw(), name.as_ptr()) as *const Value)
         }
     }
 
+    /// Creates a [`xor <value>, -1`][langref] instruction.
+    ///
+    /// Corresponds to `CreateNot` ([C++][C++]) and `LLVMBuildNot` ([C][C], [Rust][Rust]).
+    ///
+    /// [langref]: https://releases.llvm.org/8.0.1/docs/LangRef.html#xor-instruction
+    /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#a5141946c874cc73e682aa0b3b4cdb561
+    /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#ga05d09bddf47c45595a9f87b38e5ea924
+    /// [Rust]: LLVMBuildNot
     pub fn not(&mut self, value: &Value<'cid, 'mid, 'fid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
         unsafe {
             &*(LLVMBuildNot(self.as_raw(), value.as_raw(), name.as_ptr()) as *const Value)
         }
     }
 
+    /// Creates an [`icmp`][langref] instruction.
+    ///
+    /// Corresponds to `CreateICmp` ([C++][C++]) and `LLVMBuildICmp` ([C][C], [Rust][Rust]).
+    ///
+    /// [langref]: https://releases.llvm.org/8.0.1/docs/LangRef.html#icmp-instruction
+    /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#a103d309fa238e186311cbeb961b5bcf4
+    /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#ga73559fb71fcb2caee54375378f49d174
+    /// [Rust]: LLVMBuildICmp
     pub fn icmp(&mut self, pred: LLVMIntPredicate, lhs: &Value<'cid, 'mid, 'fid>, rhs: &Value<'cid, 'mid, 'fid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
         unsafe {
             &*(LLVMBuildICmp(self.as_raw(), pred, lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value)
         }
     }
 
+    /// Creates an [`fcmp`][langref] instruction.
+    ///
+    /// Corresponds to `CreateFCmp` ([C++][C++]) and `LLVMBuildFCmp` ([C][C], [Rust][Rust]).
+    ///
+    /// [langref]: https://releases.llvm.org/8.0.1/docs/LangRef.html#fcmp-instruction
+    /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#a02e6bb4130ab2bd333e859dd2565d962
+    /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#ga220dc4644a992417951e7f42fa0bc408
+    /// [Rust]: LLVMBuildFCmp
     pub fn fcmp(&mut self, pred: LLVMRealPredicate, lhs: &Value<'cid, 'mid, 'fid>, rhs: &Value<'cid, 'mid, 'fid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
         unsafe {
             &*(LLVMBuildFCmp(self.as_raw(), pred, lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value)
         }
     }
 
-    cast_impl!{ trunc,    LLVMBuildTrunc }
-    cast_impl!{ fp_trunc, LLVMBuildFPTrunc }
+cast_impl!{
+    /// Creates a [`trunc <value> to <dest_ty>`][langref] instruction.
+    ///
+    /// Corresponds to `CreateTrunc` ([C++][C++]) and `LLVMBuildTrunc` ([C][C], [Rust][Rust]).
+    ///
+    /// [langref]: https://releases.llvm.org/8.0.1/docs/LangRef.html#trunc-to-instruction
+    /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#aff3b5855dbab4411bacb8bb358042451
+    /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#ga78a6936c06635f0e8b087a8538293c8d
+    /// [Rust]: LLVMBuildTrunc
+    trunc, LLVMBuildTrunc
 
-    cast_impl!{ zext,   LLVMBuildZExt }
-    cast_impl!{ sext,   LLVMBuildSExt }
-    cast_impl!{ fp_ext, LLVMBuildFPExt }
+    /// Creates an [`fptrunc <value> to <dest_ty>`][langref] instruction.
+    ///
+    /// Corresponds to `CreateFPTrunc` ([C++][C++]) and `LLVMBuildFPTrunc` ([C][C], [Rust][Rust]).
+    ///
+    /// [langref]: https://releases.llvm.org/8.0.1/docs/LangRef.html#fptrunc-to-instruction
+    /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#aea16663b3e2cb5842b45d9fecb0a1b13
+    /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#ga2399b9ba6d37a4434a1a0cb4cd222da9
+    /// [Rust]: LLVMBuildFPTrunc
+    fp_trunc, LLVMBuildFPTrunc
 
-    cast_impl!{ fp_to_ui,   LLVMBuildFPToUI }
-    cast_impl!{ fp_to_si,   LLVMBuildFPToSI }
-    cast_impl!{ ui_to_fp,   LLVMBuildUIToFP }
-    cast_impl!{ si_to_fp,   LLVMBuildSIToFP }
-    cast_impl!{ ptr_to_int, LLVMBuildPtrToInt }
-    cast_impl!{ int_to_ptr, LLVMBuildIntToPtr }
-    cast_impl!{ bitcast,    LLVMBuildBitCast }
+    /// Creates a [`zext <value> to <dest_ty>`][langref] instruction.
+    ///
+    /// Corresponds to `CreateZExt` ([C++][C++]) and `LLVMBuildZExt` ([C][C], [Rust][Rust]).
+    ///
+    /// [langref]: https://releases.llvm.org/8.0.1/docs/LangRef.html#zext-to-instruction
+    /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#a882b7f5af1cd3f231faa442a637ff257
+    /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#ga1b13fa64b881a7a2e1c3f8f7d7046b3b
+    /// [Rust]: LLVMBuildZExt
+    zext, LLVMBuildZExt
 
+    /// Creates a [`sext <value> to <dest_ty>`][langref] instruction.
+    ///
+    /// Corresponds to `CreateSExt` ([C++][C++]) and `LLVMBuildSExt` ([C][C], [Rust][Rust]).
+    ///
+    /// [langref]: https://releases.llvm.org/8.0.1/docs/LangRef.html#sext-to-instruction
+    /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#a820ed17b6af7001ecd0eca1e9f368f8d
+    /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#ga1c17766d2faab1903b336c306ab3ce9f
+    /// [Rust]: LLVMBuildSExt
+    sext, LLVMBuildSExt
+
+    /// Creates a [`fpext <value> to <dest_ty>`][langref] instruction.
+    ///
+    /// Corresponds to `CreateFPExt` ([C++][C++]) and `LLVMBuildFPExt` ([C][C], [Rust][Rust]).
+    ///
+    /// [langref]: https://releases.llvm.org/8.0.1/docs/LangRef.html#fpext-to-instruction
+    /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#a4bad30bea3f917ada9dc599ad9df840d
+    /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#ga0fcf6a6c0c677b5ce474372c495bd3c8
+    /// [Rust]: LLVMBuildFPExt
+    fp_ext, LLVMBuildFPExt
+
+    /// Creates an [`fptoui <value> to <dest_ty>`][langref] instruction.
+    ///
+    /// Corresponds to `CreateFPToUI` ([C++][C++]) and `LLVMBuildFPToUI` ([C][C], [Rust][Rust]).
+    ///
+    /// [langref]: https://releases.llvm.org/8.0.1/docs/LangRef.html#fptoui-to-instruction
+    /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#a3c1ce63c097dec8c5156afcc2047a8a8
+    /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#ga888b92e317c8254c6eb7d9554dd928ec
+    /// [Rust]: LLVMBuildFPToUI
+    fp_to_ui, LLVMBuildFPToUI
+
+    /// Creates an [`fptosi <value> to <dest_ty>`][langref] instruction.
+    ///
+    /// Corresponds to `CreateFPToSI` ([C++][C++]) and `LLVMBuildFPToSI` ([C][C], [Rust][Rust]).
+    ///
+    /// [langref]: https://releases.llvm.org/8.0.1/docs/LangRef.html#fptosi-to-instruction
+    /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#a6533f2907f7a5c9b76e26f25cc0e9b5b
+    /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#ga8c0e4862f89c886ff68d9cb24f4ba40d
+    /// [Rust]: LLVMBuildFPToSI
+    fp_to_si, LLVMBuildFPToSI
+
+    /// Creates a [`uitofp <value> to <dest_ty>`][langref] instruction.
+    ///
+    /// Corresponds to `CreateUIToFP` ([C++][C++]) and `LLVMBuildUIToFP` ([C][C], [Rust][Rust]).
+    ///
+    /// [langref]: https://releases.llvm.org/8.0.1/docs/LangRef.html#uitofp-to-instruction
+    /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#a3c1ce63c097dec8c5156afcc2047a8a8
+    /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#gaa8a3fb00c897fb03aa0b9400a286bb93
+    /// [Rust]: LLVMBuildUIToFP
+    ui_to_fp, LLVMBuildUIToFP
+
+    /// Creates an [`sitofp <value> to <dest_ty>`][langref] instruction.
+    ///
+    /// Corresponds to `CreateSIToFP` ([C++][C++]) and `LLVMBuildSIToFP` ([C][C], [Rust][Rust]).
+    ///
+    /// [langref]: https://releases.llvm.org/8.0.1/docs/LangRef.html#sitofp-to-instruction
+    /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#a81955852fdd17a04e042c6b9c4292a6f
+    /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#ga2c03cef4b58d1d38d75ce07a245beda4
+    /// [Rust]: LLVMBuildSIToFP
+    si_to_fp, LLVMBuildSIToFP
+
+    /// Creates a [`ptrtoint <value> to <dest_ty>`][langref] instruction.
+    ///
+    /// Corresponds to `CreatePtrToInt` ([C++][C++]) and `LLVMBuildPtrToInt` ([C][C], [Rust][Rust]).
+    ///
+    /// [langref]: https://releases.llvm.org/8.0.1/docs/LangRef.html#ptrtoint-to-instruction
+    /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#a3d02e6bd37e0308649c8dadbde629302
+    /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#gadc4471c1a7c0a701adcf601af1e87b7f
+    /// [Rust]: LLVMBuildPtrToInt
+    ptr_to_int, LLVMBuildPtrToInt
+
+    /// Creates an [`inttoptr <value> to <dest_ty>`][langref] instruction.
+    ///
+    /// Corresponds to `CreateIntToPtr` ([C++][C++]) and `LLVMBuildIntToPtr` ([C][C], [Rust][Rust]).
+    ///
+    /// [langref]: https://releases.llvm.org/8.0.1/docs/LangRef.html#inttoptr-to-instruction
+    /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#a3dd514a273066351b15fb4c5726ba294
+    /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#gaa95432528a09d5bd7b018145c5cd7897
+    /// [Rust]: LLVMBuildIntToPtr
+    int_to_ptr, LLVMBuildIntToPtr
+
+    /// Creates a [`bitcast <value> to <dest_ty>`][langref] instruction.
+    ///
+    /// Corresponds to `CreateBitCast` ([C++][C++]) and `LLVMBuildBitCast` ([C][C], [Rust][Rust]).
+    ///
+    /// [langref]: https://releases.llvm.org/8.0.1/docs/LangRef.html#bitcast-to-instruction
+    /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#a5e3bfda687f0bb870891d2b7722e7c2a
+    /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#ga1d8e6d373823d51438bf4889af6ff08a
+    /// [Rust]: LLVMBuildBitCast
+    bitcast, LLVMBuildBitCast
+}
+
+    /// Creates a [`getelementptr`][langref] instruction.
+    ///
+    /// Corresponds to `CreateGEP` ([C++][C++]) and `LLVMBuildGEP2` ([C][C], [Rust][Rust]).
+    ///
+    /// [langref]: https://releases.llvm.org/8.0.1/docs/LangRef.html#getelementptr-instruction
+    /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#a9efb4ffb182a6e9c3765a8dbd51ce162
+    /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#gacaeda0ff783160af64d0d27a5dc2c836
+    /// [Rust]: LLVMBuildGEP2
     pub fn get_element_ptr(&mut self, ty: &Type<'cid>, ptr: &Value<'cid, 'mid, 'fid>, indices: &[&Value<'cid, 'mid, 'fid>], name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
         unsafe {
             &*(LLVMBuildGEP2(self.as_raw(), ty.as_raw(), ptr.as_raw(), indices.as_ptr() as *mut LLVMValueRef, indices.len() as c_uint, name.as_ptr()) as *const Value)
         }
     }
 
+    /// Creates a [`getelementptr inbounds`][langref] instruction.
+    ///
+    /// Corresponds to `CreateInBoundsGEP` ([C++][C++]) and `LLVMBuildInBoundsGEP2` ([C][C], [Rust][Rust]).
+    ///
+    /// [langref]: https://releases.llvm.org/8.0.1/docs/LangRef.html#getelementptr-instruction
+    /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#a2e6fb98fb80267ebfad1e6c8691e8675
+    /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#gaa67a3cd902bea7e7c1b8185f0c23fc13
+    /// [Rust]: LLVMBuildInBoundsGEP2
     pub fn get_element_ptr_in_bounds(&mut self, ty: &Type<'cid>, ptr: &Value<'cid, 'mid, 'fid>, indices: &[&Value<'cid, 'mid, 'fid>], name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
         unsafe {
             &*(LLVMBuildInBoundsGEP2(self.as_raw(), ty.as_raw(), ptr.as_raw(), indices.as_ptr() as *mut LLVMValueRef, indices.len() as c_uint, name.as_ptr()) as *const Value)
         }
     }
 
+    /// Creates a [`llvm.memset`][langref] intrinsic call. If the pointer isn't an `i8*`, it will be converted.
+    ///
+    /// Corresponds to `CreateMemSet` ([C++][C++]) and `LLVMBuildMemSet` ([C][C], [Rust][Rust]).
+    ///
+    /// [langref]: https://releases.llvm.org/8.0.1/docs/LangRef.html#llvm-memset-intrinsics
+    /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilderBase.html#a91f61bd0810e6ff8745835115711371d
+    /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#ga61b055cd2f1eb7cc35f9776752583ba9
+    /// [Rust]: LLVMBuildMemSet
     pub fn memset(&mut self, ptr: &Value<'cid, 'mid, 'fid>, value: &Value<'cid, 'mid, 'fid>, len: &Value<'cid, 'mid, 'fid>, align: c_uint) -> &'block Value<'cid, 'mid, 'fid> {
         unsafe {
             &*(LLVMBuildMemSet(self.as_raw(), ptr.as_raw(), value.as_raw(), len.as_raw(), align) as *mut Value)
         }
     }
 
+    /// Creates a [`llvm.memcpy`][langref] intrinsic call. If the pointers aren't `i8*`, they will be converted.
+    ///
+    /// Corresponds to `CreateMemCpy` ([C++][C++]) and `LLVMBuildMemCpy` ([C][C], [Rust][Rust]).
+    ///
+    /// [langref]: https://releases.llvm.org/8.0.1/docs/LangRef.html#llvm-memcpy-intrinsic
+    /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilderBase.html#ac1c9cc4a0006b6810c4c75199c414b21
+    /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#gab7feac5d1279d667ccab24cce46f3ff1
+    /// [Rust]: LLVMBuildMemCpy
     pub fn memcpy(&mut self, dest: &Value<'cid, 'mid, 'fid>, dest_align: c_uint, src: &Value<'cid, 'mid, 'fid>, src_align: c_uint, size: &Value<'cid, 'mid, 'fid>) -> &'block Value<'cid, 'mid, 'fid> {
         unsafe {
             &*(LLVMBuildMemCpy(self.as_raw(), dest.as_raw(), dest_align, src.as_raw(), src_align, size.as_raw()) as *mut Value)
         }
     }
 
+    /// Creates a [`llvm.memmove`][langref] intrinsic call. If the pointers aren't `i8*`, they will be converted.
+    ///
+    /// Corresponds to `CreateMemMove` ([C++][C++]) and `LLVMBuildMemMove` ([C][C], [Rust][Rust]).
+    ///
+    /// [langref]: https://releases.llvm.org/8.0.1/docs/LangRef.html#llvm-memmove-intrinsic
+    /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilderBase.html#acdaa7a9003d8f4bad64b6048e8ef70ab
+    /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#gae1dffdc6f022bcbe99fbf2ed4a8ae747
+    /// [Rust]: LLVMBuildMemMove
     pub fn memmove(&mut self, dest: &Value<'cid, 'mid, 'fid>, dest_align: c_uint, src: &Value<'cid, 'mid, 'fid>, src_align: c_uint, size: &Value<'cid, 'mid, 'fid>) -> &'block Value<'cid, 'mid, 'fid> {
         unsafe {
             &*(LLVMBuildMemMove(self.as_raw(), dest.as_raw(), dest_align, src.as_raw(), src_align, size.as_raw()) as *mut Value)
         }
     }
 
+    /// Creates an [`alloca <ty>`][langref] instruction.
+    ///
+    /// Corresponds to `CreateAlloca` ([C++][C++]) and `LLVMBuildAlloca` ([C][C], [Rust][Rust]).
+    ///
+    /// [langref]: https://releases.llvm.org/8.0.1/docs/LangRef.html#alloca-instruction
+    /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#ae3595500d998878acc071f65e613e750
+    /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#ga3a153f9ef93ac41cf98605a28af5392f
+    /// [Rust]: LLVMBuildAlloca
     pub fn alloca(&mut self, ty: &Type<'cid>, name: &CStr) -> &'block mut Alloca<'cid, 'mid, 'fid> {
         unsafe {
             &mut *(LLVMBuildAlloca(self.as_raw(), ty.as_raw(), name.as_ptr()) as *mut Alloca)
         }
     }
 
+    /// Creates an [`alloca <ty>, <len>`][langref] instruction.
+    ///
+    /// Corresponds to `CreateAlloca` ([C++][C++]) and `LLVMBuildArrayAlloca` ([C][C], [Rust][Rust]).
+    ///
+    /// [langref]: https://releases.llvm.org/8.0.1/docs/LangRef.html#alloca-instruction
+    /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#ae3595500d998878acc071f65e613e750
+    /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#ga701147c87c04ea39cd1ecb40740950a0
+    /// [Rust]: LLVMBuildArrayAlloca
     pub fn array_alloca(&mut self, ty: &Type<'cid>, len: &Value<'cid, 'mid, 'fid>, name: &CStr) -> &'block mut Alloca<'cid, 'mid, 'fid> {
         unsafe {
             &mut *(LLVMBuildArrayAlloca(self.as_raw(), ty.as_raw(), len.as_raw(), name.as_ptr()) as *mut Alloca)
         }
     }
 
+    /// Creates a [`load`][langref] instruction.
+    ///
+    /// Corresponds to `CreateLoad` ([C++][C++]) and `LLVMBuildLoad2` ([C][C], [Rust][Rust]).
+    ///
+    /// [langref]: https://releases.llvm.org/8.0.1/docs/LangRef.html#load-instruction
+    /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#a2d5887ed3edefb0f54281416f655bd63
+    /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#ga025026f91ebe29901a52f5f261f3fc57
+    /// [Rust]: LLVMBuildLoad2
     pub fn load(&mut self, ty: &Type<'cid>, ptr: &Value<'cid, 'mid, 'fid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
         unsafe {
             &*(LLVMBuildLoad2(self.as_raw(), ty.as_raw(), ptr.as_raw(), name.as_ptr()) as *const Value)
         }
     }
 
+    /// Creates a [`store`][langref] instruction.
+    ///
+    /// Corresponds to `CreateStore` ([C++][C++]) and `LLVMBuildStore` ([C][C], [Rust][Rust]).
+    ///
+    /// [langref]: https://releases.llvm.org/8.0.1/docs/LangRef.html#load-instruction
+    /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#a867941d6f2e653fa0fc1004602fa9fb3
+    /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#ga9a320c8b85497624cffd657178fbb08b
+    /// [Rust]: LLVMBuildStore
     pub fn store(&mut self, value: &Value<'cid, 'mid, 'fid>, ptr: &Value<'cid, 'mid, 'fid>) {
         unsafe {
             LLVMBuildStore(self.as_raw(), value.as_raw(), ptr.as_raw());
         }
     }
 
+    /// Creates a [`phi`][langref] instruction.
+    ///
+    /// Corresponds to `CreatePHI` ([C++][C++]) and `LLVMBuildPhi` ([C][C], [Rust][Rust]).
+    ///
+    /// [langref]: https://releases.llvm.org/8.0.1/docs/LangRef.html#phi-instruction
+    /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#a4d5899caa1a0ec02ec1825461cf05ca2
+    /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#gad10754a4b0988de26d60cf82df467c06
+    /// [Rust]: LLVMBuildPhi
     pub fn phi(&mut self, ty: &Type<'cid>, name: &CStr) -> &'block mut Phi<'cid, 'mid, 'fid> {
         unsafe {
             &mut *(LLVMBuildPhi(self.as_raw(), ty.as_raw(), name.as_ptr()) as *mut Phi)
@@ -512,7 +739,14 @@ binop_impl!{
         }
     }
 
-
+    /// Creates an [`unreachable`][langref] instruction.
+    ///
+    /// Corresponds to `CreateUnreachable` ([C++][C++]) and `LLVMBuildUnreachable` ([C][C], [Rust][Rust]).
+    ///
+    /// [langref]: https://releases.llvm.org/8.0.1/docs/LangRef.html#unreachable-instruction
+    /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#abce2a753801d160896559727f8469871
+    /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#gac549292175e78f7d29f2354852e6491a
+    /// [Rust]: LLVMBuildUnreachable
     pub fn unreachable(&mut self) {
         unsafe {
             LLVMBuildUnreachable(self.as_raw());
