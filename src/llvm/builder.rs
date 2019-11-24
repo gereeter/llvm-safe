@@ -10,7 +10,7 @@ pub use llvm_sys::{LLVMIntPredicate, LLVMRealPredicate};
 use opaque::Opaque;
 use owned::{Owned, DropInPlace};
 
-use llvm::{Context, BasicBlock, Label, Value, Phi, Alloca, Type};
+use llvm::{Context, BasicBlock, Label, Value, Phi, Alloca, Type, FunctionType};
 
 pub struct Builder<'cid: 'context, 'context> {
     _context: PhantomData<&'context Context<'cid>>,
@@ -261,15 +261,15 @@ impl<'cid, 'context, 'mid, 'fid, 'block> PositionedBuilder<'cid, 'context, 'mid,
         }
     }
 
-    pub fn get_element_ptr(&mut self, ptr: &Value<'cid, 'mid, 'fid>, indices: &[&Value<'cid, 'mid, 'fid>], name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
+    pub fn get_element_ptr<SubTy>(&mut self, ty: &Type<'cid, SubTy>, ptr: &Value<'cid, 'mid, 'fid>, indices: &[&Value<'cid, 'mid, 'fid>], name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
         unsafe {
-            &*(LLVMBuildGEP(self.as_raw(), ptr.as_raw(), indices.as_ptr() as *mut LLVMValueRef, indices.len() as c_uint, name.as_ptr()) as *const Value)
+            &*(LLVMBuildGEP2(self.as_raw(), ty.as_raw(), ptr.as_raw(), indices.as_ptr() as *mut LLVMValueRef, indices.len() as c_uint, name.as_ptr()) as *const Value)
         }
     }
 
-    pub fn get_element_ptr_in_bounds(&mut self, ptr: &Value<'cid, 'mid, 'fid>, indices: &[&Value<'cid, 'mid, 'fid>], name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
+    pub fn get_element_ptr_in_bounds<SubTy>(&mut self, ty: &Type<'cid, SubTy>, ptr: &Value<'cid, 'mid, 'fid>, indices: &[&Value<'cid, 'mid, 'fid>], name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
         unsafe {
-            &*(LLVMBuildInBoundsGEP(self.as_raw(), ptr.as_raw(), indices.as_ptr() as *mut LLVMValueRef, indices.len() as c_uint, name.as_ptr()) as *const Value)
+            &*(LLVMBuildInBoundsGEP2(self.as_raw(), ty.as_raw(), ptr.as_raw(), indices.as_ptr() as *mut LLVMValueRef, indices.len() as c_uint, name.as_ptr()) as *const Value)
         }
     }
 
@@ -285,9 +285,9 @@ impl<'cid, 'context, 'mid, 'fid, 'block> PositionedBuilder<'cid, 'context, 'mid,
         }
     }
 
-    pub fn load(&mut self, ptr: &Value<'cid, 'mid, 'fid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
+    pub fn load<SubTy>(&mut self, ty: &Type<'cid, SubTy>, ptr: &Value<'cid, 'mid, 'fid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
         unsafe {
-            &*(LLVMBuildLoad(self.as_raw(), ptr.as_raw(), name.as_ptr()) as *const Value)
+            &*(LLVMBuildLoad2(self.as_raw(), ty.as_raw(), ptr.as_raw(), name.as_ptr()) as *const Value)
         }
     }
 
@@ -303,9 +303,9 @@ impl<'cid, 'context, 'mid, 'fid, 'block> PositionedBuilder<'cid, 'context, 'mid,
         }
     }
 
-    pub fn call(&mut self, func: &Value<'cid, 'mid, 'fid>, args: &[&Value<'cid, 'mid, 'fid>], name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
+    pub fn call(&mut self, ty: &Type<'cid, FunctionType>, func: &Value<'cid, 'mid, 'fid>, args: &[&Value<'cid, 'mid, 'fid>], name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
         unsafe {
-            &*(LLVMBuildCall(self.as_raw(), func.as_raw(), args.as_ptr() as *const LLVMValueRef as *mut LLVMValueRef, args.len() as u32, name.as_ptr()) as *const Value)
+            &*(LLVMBuildCall2(self.as_raw(), ty.as_raw(), func.as_raw(), args.as_ptr() as *const LLVMValueRef as *mut LLVMValueRef, args.len() as u32, name.as_ptr()) as *const Value)
         }
     }
 
