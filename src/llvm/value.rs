@@ -21,6 +21,12 @@ impl<'cid, 'mid, 'fid> Value<'cid, 'mid, 'fid> {
         }
     }
 
+    pub fn dump(&self) {
+        unsafe {
+            LLVMDumpValue(self.as_raw());
+        }
+    }
+
     pub fn as_raw(&self) -> LLVMValueRef {
         self as *const Value as *mut Value as LLVMValueRef
     }
