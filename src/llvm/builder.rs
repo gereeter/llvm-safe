@@ -61,6 +61,16 @@ macro_rules! binop_impl {
     };
 }
 
+macro_rules! cast_impl {
+    ( $rust_name:ident, $c_name:ident )  => {
+        pub fn $rust_name(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
+            unsafe {
+                &*($c_name(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
+            }
+        }
+    };
+}
+
 impl<'cid, 'context, 'mid, 'fid, 'block> PositionedBuilder<'cid, 'context, 'mid, 'fid, 'block> {
     pub fn br(&mut self, target: &Label<'fid>) -> &'block Value<'cid, 'mid, 'fid> {
         unsafe {
@@ -136,65 +146,20 @@ impl<'cid, 'context, 'mid, 'fid, 'block> PositionedBuilder<'cid, 'context, 'mid,
         }
     }
 
-    pub fn trunc(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
-        unsafe {
-            &*(LLVMBuildTrunc(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
-        }
-    }
+    cast_impl!{ trunc,    LLVMBuildTrunc }
+    cast_impl!{ fp_trunc, LLVMBuildFPTrunc }
 
-    pub fn fp_trunc(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
-        unsafe {
-            &*(LLVMBuildFPTrunc(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
-        }
-    }
+    cast_impl!{ zext,   LLVMBuildZExt }
+    cast_impl!{ sext,   LLVMBuildSExt }
+    cast_impl!{ fp_ext, LLVMBuildFPExt }
 
-    pub fn zext(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
-        unsafe {
-            &*(LLVMBuildZExt(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
-        }
-    }
-
-    pub fn sext(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
-        unsafe {
-            &*(LLVMBuildSExt(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
-        }
-    }
-
-    pub fn fp_ext(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
-        unsafe {
-            &*(LLVMBuildFPExt(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
-        }
-    }
-
-    pub fn fp_to_ui(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
-        unsafe {
-            &*(LLVMBuildFPToUI(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
-        }
-    }
-
-    pub fn fp_to_si(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
-        unsafe {
-            &*(LLVMBuildFPToSI(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
-        }
-    }
-
-    pub fn ui_to_fp(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
-        unsafe {
-            &*(LLVMBuildUIToFP(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
-        }
-    }
-
-    pub fn si_to_fp(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
-        unsafe {
-            &*(LLVMBuildSIToFP(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
-        }
-    }
-
-    pub fn bitcast(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
-        unsafe {
-            &*(LLVMBuildBitCast(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
-        }
-    }
+    cast_impl!{ fp_to_ui,   LLVMBuildFPToUI }
+    cast_impl!{ fp_to_si,   LLVMBuildFPToSI }
+    cast_impl!{ ui_to_fp,   LLVMBuildUIToFP }
+    cast_impl!{ si_to_fp,   LLVMBuildSIToFP }
+    cast_impl!{ ptr_to_int, LLVMBuildPtrToInt }
+    cast_impl!{ int_to_ptr, LLVMBuildIntToPtr }
+    cast_impl!{ bitcast,    LLVMBuildBitCast }
 
     pub fn get_element_ptr(&mut self, ty: &Type<'cid>, ptr: &Value<'cid, 'mid, 'fid>, indices: &[&Value<'cid, 'mid, 'fid>], name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
         unsafe {
