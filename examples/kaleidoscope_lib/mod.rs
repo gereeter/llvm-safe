@@ -64,6 +64,28 @@ fn handle_top_level_expr<'cid: 'context, 'context, 'mid: 'module + 'fpm, 'module
     }
 }
 
+// A horribly slow and hacky way to iterate over our input. TODO: we can do much better. Readline?
+struct CharsIter<R> {
+    reader: R
+}
+
+impl<R: Read> Iterator for CharsIter<R> {
+    type Item = char;
+    fn next(&mut self) -> Option<char> {
+        let mut buf = [0; 4];
+        for i in 0..4 {
+            if self.reader.read(&mut buf[i..i+1]).unwrap() == 0 {
+                return None;
+            }
+            match std::str::from_utf8(&buf[..i+1]) {
+                Ok(s) => return s.chars().next(),
+                Err(e) => assert!(e.error_len().is_none())
+            }
+        }
+        unreachable!();
+    }
+}
+
 pub fn main() {
     unsafe {
         init::init_target_infos();
@@ -85,7 +107,7 @@ pub fn main() {
     stdout.lock().flush().unwrap();
 
     let stdin = io::stdin();
-    let mut tokens = Tokens::new(stdin.lock().chars().map(|c| c.unwrap())).peekable();
+    let mut tokens = Tokens::new(CharsIter { reader: stdin.lock() }).peekable();
 
     id::with2(|context_id, module_id| {
         let context = Context::new(context_id);

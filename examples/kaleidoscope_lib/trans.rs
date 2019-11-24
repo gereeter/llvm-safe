@@ -56,7 +56,7 @@ impl<'cid, 'context, 'mid, 'module> Context<'cid, 'context, 'mid, 'module> {
 
                         let arg_vals = args.iter().map(|arg| self.trans_expr(arg, fbuilder, builder, named_values).unwrap()).collect::<Vec<_>>();
 
-                        Ok(builder.call(func.as_value(), &arg_vals, const_cstr!("calltmp").as_cstr()))
+                        Ok(builder.call(func.function_type(), func.as_value(), &arg_vals, const_cstr!("calltmp").as_cstr()))
                     },
                     None => Err("Calling function that does not exist")
                 }
@@ -103,8 +103,7 @@ impl<'cid, 'context, 'mid, 'module> Context<'cid, 'context, 'mid, 'module> {
 
         id::with(|fid| {
             for (param, arg_name) in function.builder(fid).params().zip(proto.args.iter()) {
-                let c_arg_name = CString::new(&**arg_name).unwrap();
-                param.set_name(&c_arg_name);
+                param.set_name(arg_name);
             }
         });
 
