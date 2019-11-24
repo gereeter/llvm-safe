@@ -19,6 +19,17 @@ impl<'cid, 'mid, 'fid> Phi<'cid, 'mid, 'fid> {
         }
     }
 
+    pub fn downcast_value<'a>(value: &'a Value<'cid, 'mid, 'fid>) -> Result<&'a Phi<'cid, 'mid, 'fid>, ()> {
+        unsafe {
+            let ret = LLVMIsAPHINode(value.as_raw());
+            if ret.is_null() {
+                Err(())
+            } else {
+                Ok(&*(ret as *mut Phi))
+            }
+        }
+    }
+
     pub fn as_value(&self) -> &Value<'cid, 'mid, 'fid> {
         upcast(self)
     }

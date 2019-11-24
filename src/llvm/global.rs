@@ -1,5 +1,5 @@
 use llvm_sys::prelude::*;
-use llvm_sys::core::LLVMSetInitializer;
+use llvm_sys::core::{LLVMSetInitializer, LLVMIsAGlobalVariable};
 
 use id::IdRef;
 use inheritance::{upcast, DerivesFrom};
@@ -19,6 +19,17 @@ impl<'cid, 'mid> Global<'cid, 'mid> {
     pub fn set_initializer(&mut self, value: &Constant<'cid>) {
         unsafe {
             LLVMSetInitializer(self.as_raw(), value.as_raw());
+        }
+    }
+
+    pub fn downcast_value<'a, 'fid>(value: &'a Value<'cid, 'mid, 'fid>) -> Result<&'a Global<'cid, 'mid>, ()> {
+        unsafe {
+            let ret = LLVMIsAGlobalVariable(value.as_raw());
+            if ret.is_null() {
+                Err(())
+            } else {
+                Ok(&*(ret as *mut Global))
+            }
         }
     }
 

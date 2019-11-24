@@ -20,6 +20,17 @@ impl<'cid, 'mid, 'fid> Alloca<'cid, 'mid, 'fid> {
         }
     }
 
+    pub fn downcast_value<'a>(value: &'a Value<'cid, 'mid, 'fid>) -> Result<&'a Alloca<'cid, 'mid, 'fid>, ()> {
+        unsafe {
+            let ret = LLVMIsAAllocaInst(value.as_raw());
+            if ret.is_null() {
+                Err(())
+            } else {
+                Ok(&*(ret as *mut Alloca))
+            }
+        }
+    }
+
     pub fn as_value(&self) -> &Value<'cid, 'mid, 'fid> {
         upcast(self)
     }

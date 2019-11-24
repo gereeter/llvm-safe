@@ -59,6 +59,16 @@ impl<'cid> Constant<'cid> {
         }
     }
 
+    pub fn downcast_value<'a, 'mid, 'fid>(value: &'a Value<'cid, 'mid, 'fid>) -> Result<&'a Constant<'cid>, ()> {
+        unsafe {
+            if LLVMIsConstant(value.as_raw()) != 0 {
+                Ok(&*(value.as_raw() as *mut Constant))
+            } else {
+                Err(())
+            }
+        }
+    }
+
     pub fn as_value<'mid, 'fid>(&self) -> &Value<'cid, 'mid, 'fid> {
         upcast(self)
     }

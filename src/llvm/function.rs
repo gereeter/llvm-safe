@@ -120,6 +120,17 @@ impl<'cid, 'mid> FunctionLabel<'cid, 'mid> {
         }
     }
 
+    pub fn downcast_value<'a, 'fid>(value: &'a Value<'cid, 'mid, 'fid>) -> Result<&'a FunctionLabel<'cid, 'mid>, ()> {
+        unsafe {
+            let ret = LLVMIsAFunction(value.as_raw());
+            if ret.is_null() {
+                Err(())
+            } else {
+                Ok(&*(ret as *mut FunctionLabel))
+            }
+        }
+    }
+
     pub fn as_value<'fid>(&self) -> &Value<'cid, 'mid, 'fid> {
         upcast(self)
     }
