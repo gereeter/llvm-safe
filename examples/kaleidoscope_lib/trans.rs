@@ -27,8 +27,8 @@ impl<'cid, 'context, 'mid, 'module> Context<'cid, 'context, 'mid, 'module> {
             ast::Expr::Number(value) => Ok(Constant::f64(value, self.context).as_value()),
             ast::Expr::Variable(ref name) => named_values.get(&**name).cloned().ok_or("Unknown name in trans"),
             ast::Expr::BinaryOp(op, ref lhs, ref rhs) => {
-                let lhs_val = try!(self.trans_expr(lhs, fbuilder, builder, named_values));
-                let rhs_val = try!(self.trans_expr(rhs, fbuilder, builder, named_values));
+                let lhs_val = self.trans_expr(lhs, fbuilder, builder, named_values)?;
+                let rhs_val = self.trans_expr(rhs, fbuilder, builder, named_values)?;
 
                 match op {
                     '+' => Ok(builder.fadd(lhs_val, rhs_val, const_cstr!("addtmp").as_cstr())),
@@ -66,17 +66,17 @@ impl<'cid, 'context, 'mid, 'module> Context<'cid, 'context, 'mid, 'module> {
                 let (else_label, else_block) = fbuilder.append_basic_block(const_cstr!("else").as_cstr(), self.context);
                 let (cont_label, cont_block) = fbuilder.append_basic_block(const_cstr!("ifcont").as_cstr(), self.context);
 
-                let cond_val = try!(self.trans_expr(cond_expr, fbuilder, builder, named_values));
+                let cond_val = self.trans_expr(cond_expr, fbuilder, builder, named_values)?;
                 let cond_val = builder.fcmp(LLVMRealPredicate::LLVMRealONE, cond_val, Constant::f64(0.0, self.context).as_value(), const_cstr!("ifcond").as_cstr());
                 builder.cond_br(cond_val, then_label, else_label);
 
                 builder.position_at_end(then_block);
-                let then_val = try!(self.trans_expr(then_expr, fbuilder, builder, named_values));
+                let then_val = self.trans_expr(then_expr, fbuilder, builder, named_values)?;
                 builder.br(cont_label);
                 let then_label = builder.get_position();
 
                 builder.position_at_end(else_block);
-                let else_val = try!(self.trans_expr(else_expr, fbuilder, builder, named_values));
+                let else_val = self.trans_expr(else_expr, fbuilder, builder, named_values)?;
                 builder.br(cont_label);
                 let else_label = builder.get_position();
 
@@ -111,18 +111,18 @@ impl<'cid, 'context, 'mid, 'module> Context<'cid, 'context, 'mid, 'module> {
     }
 
     pub fn trans_func(&mut self, func: &ast::Function, builder: &mut llvm::Builder<'cid, 'context>) -> Result<&'module mut Function<'cid, 'mid>, &'static str> {
-        let function = try!(self.trans_proto(&func.proto));
-        try!(id::with(|function_id| {
+        let function = self.trans_proto(&func.proto)?;
+        id::with(|function_id| {
             let mut function_builder = function.builder(function_id);
             let named_values = func.proto.args.iter().map(|s| &**s).zip(function_builder.params()).collect();
             let (_, entry_bb) = function_builder.append_basic_block(const_cstr!("entry").as_cstr(), self.context);
             let builder = builder.position_at_end(entry_bb);
 
-            let ret_val = try!(self.trans_expr(&func.body, &mut function_builder, builder, &named_values));
+            let ret_val = self.trans_expr(&func.body, &mut function_builder, builder, &named_values)?;
             builder.ret(ret_val);
 
             Ok(())
-        }));
+        })?;
 
         function.verify();
 

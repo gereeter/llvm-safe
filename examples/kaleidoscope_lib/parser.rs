@@ -17,7 +17,7 @@ pub fn parse_identifier_expr<I: Iterator<Item=Token>>(iter: &mut Peekable<I>) ->
         let mut args = Vec::new();
         if iter.peek() != Some(&Token::Other(')')) {
             loop {
-                args.push(try!(parse_expr(iter)));
+                args.push(parse_expr(iter)?);
                 
                 if iter.peek() == Some(&Token::Other(')')) {
                     break;
@@ -47,7 +47,7 @@ pub fn parse_number_expr<I: Iterator<Item=Token>>(iter: &mut Peekable<I>) -> Res
 /// parenexpr ::= '(' expression ')'
 pub fn parse_paren_expr<I: Iterator<Item=Token>>(iter: &mut Peekable<I>) -> Result<Expr, &'static str> {
     if let Some(Token::Other('(')) = iter.next() {
-        let ret = try!(parse_expr(iter));
+        let ret = parse_expr(iter)?;
         
         if let Some(Token::Other(')')) = iter.next() {
             Ok(ret)
@@ -62,15 +62,15 @@ pub fn parse_paren_expr<I: Iterator<Item=Token>>(iter: &mut Peekable<I>) -> Resu
 /// ifexpr ::= 'if' expression 'then' expression 'else' expression
 pub fn parse_if_expr<I: Iterator<Item=Token>>(iter: &mut Peekable<I>) -> Result<Expr, &'static str> {
     if let Some(Token::If) = iter.next() {
-        let cond_expr = try!(parse_expr(iter));
+        let cond_expr = parse_expr(iter)?;
         if iter.next() != Some(Token::Then) {
             return Err("Expected 'then'");
         }
-        let then_expr = try!(parse_expr(iter));
+        let then_expr = parse_expr(iter)?;
         if iter.next() != Some(Token::Else) {
             return Err("Expected 'else'");
         }
-        let else_expr = try!(parse_expr(iter));
+        let else_expr = parse_expr(iter)?;
         Ok(Expr::If(Box::new(cond_expr), Box::new(then_expr), Box::new(else_expr)))
     } else {
         Err("Expected 'if'")
@@ -100,7 +100,7 @@ pub fn parse_primary<I: Iterator<Item=Token>>(iter: &mut Peekable<I>) -> Result<
 ///   ::= primary binoprhs
 ///
 pub fn parse_expr<I: Iterator<Item=Token>>(iter: &mut Peekable<I>) -> Result<Expr, &'static str> {
-    let lhs = try!(parse_primary(iter));
+    let lhs = parse_primary(iter)?;
     parse_binop_rhs(iter, 0, lhs)
 }
 
@@ -129,11 +129,11 @@ pub fn parse_binop_rhs<I: Iterator<Item=Token>>(iter: &mut Peekable<I>, preceden
             return Err("Expected binary operation");
         };
 
-        let next = try!(parse_primary(iter));
+        let next = parse_primary(iter)?;
 
         let rhs = if let Some(next_prec) = iter.peek().and_then(get_token_precedence) {
             if tok_prec < next_prec {
-                try!(parse_binop_rhs(iter, tok_prec + 1, next))
+                parse_binop_rhs(iter, tok_prec + 1, next)?
             } else {
                 next
             }
@@ -175,8 +175,8 @@ pub fn parse_prototype<I: Iterator<Item=Token>>(iter: &mut Peekable<I>) -> Resul
 pub fn parse_definition<I: Iterator<Item=Token>>(iter: &mut Peekable<I>) -> Result<Function, &'static str> {
     if let Some(Token::Def) = iter.next() {
         Ok(Function {
-            proto: try!(parse_prototype(iter)),
-            body: try!(parse_expr(iter))
+            proto: parse_prototype(iter)?,
+            body: parse_expr(iter)?
         })
     } else {
         Err("Expected 'def' in definition")
@@ -196,6 +196,6 @@ pub fn parse_extern<I: Iterator<Item=Token>>(iter: &mut Peekable<I>) -> Result<P
 pub fn parse_top_level_expr<I: Iterator<Item=Token>>(iter: &mut Peekable<I>) -> Result<Function, &'static str> {
     Ok(Function {
         proto: Prototype { name: String::new(), args: Vec::new() },
-        body: try!(parse_expr(iter))
+        body: parse_expr(iter)?
     })
 }
