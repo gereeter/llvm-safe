@@ -80,13 +80,13 @@ impl<'cid> Type<'cid> {
         }
     }
 
-    pub fn pointer<'ctx, SubType: DerivesFrom<Type<'cid>>>(inner: &'ctx SubType, address_space: c_uint) -> &'ctx PointerType<'cid, SubType> {
+    pub fn pointer<'ctx, SubType: DerivesFrom<Type<'cid>> + ?Sized>(inner: &'ctx SubType, address_space: c_uint) -> &'ctx PointerType<'cid, SubType> {
         unsafe {
             &*(LLVMPointerType(upcast(inner).as_raw(), address_space) as *mut PointerType<SubType>)
         }
     }
 
-    pub fn array<'ctx, SubType: DerivesFrom<Type<'cid>>>(inner: &'ctx SubType, count: c_uint) -> &'ctx ArrayType<'cid, SubType> {
+    pub fn array<'ctx, SubType: DerivesFrom<Type<'cid>> + ?Sized>(inner: &'ctx SubType, count: c_uint) -> &'ctx ArrayType<'cid, SubType> {
         unsafe {
             &*(LLVMArrayType(upcast(inner).as_raw(), count) as *mut ArrayType<SubType>)
         }
