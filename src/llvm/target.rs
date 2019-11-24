@@ -30,12 +30,12 @@ pub struct Target {
 impl Target {
     pub fn from_triple(triple: &CStr) -> Result<&'static Target, Owned<MallocCStr>> {
         unsafe {
-            let mut target_ptr = mem::uninitialized();
-            let mut err_ptr = mem::uninitialized();
-            if LLVMGetTargetFromTriple(triple.as_ptr(), &mut target_ptr, &mut err_ptr) == 0 {
-                Ok(&*(target_ptr as *mut Target))
+            let mut target_ptr = mem::MaybeUninit::uninit();
+            let mut err_ptr = mem::MaybeUninit::uninit();
+            if LLVMGetTargetFromTriple(triple.as_ptr(), target_ptr.as_mut_ptr(), err_ptr.as_mut_ptr()) == 0 {
+                Ok(&*(target_ptr.assume_init() as *mut Target))
             } else {
-                Err(MallocCStr::from_raw(err_ptr))
+                Err(MallocCStr::from_raw(err_ptr.assume_init()))
             }
         }
     }
@@ -64,11 +64,11 @@ impl TargetMachine {
 
     pub fn emit_module_to_file<'cid, 'mid, 'context>(&self, module: &Module<'cid, 'mid, 'context>, filename: &CStr, codegen: LLVMCodeGenFileType) -> Result<(), Owned<MallocCStr>> {
         unsafe {
-            let mut err_ptr = mem::uninitialized();
-            if LLVMTargetMachineEmitToFile(self.as_raw(), module.as_raw(), filename.as_ptr() as *mut _, codegen, &mut err_ptr) == 0 {
+            let mut err_ptr = mem::MaybeUninit::uninit();
+            if LLVMTargetMachineEmitToFile(self.as_raw(), module.as_raw(), filename.as_ptr() as *mut _, codegen, err_ptr.as_mut_ptr()) == 0 {
                 Ok(())
             } else {
-                Err(MallocCStr::from_raw(err_ptr))
+                Err(MallocCStr::from_raw(err_ptr.assume_init()))
             }
         }
     }
