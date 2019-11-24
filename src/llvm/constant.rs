@@ -4,6 +4,7 @@ use llvm_sys::core::*;
 use libc::{c_char, c_uint, c_int};
 
 use id::IdRef;
+use inheritance::upcast;
 use opaque::Opaque;
 
 use llvm::{Context, Type, IntegerType, PointerType, Value};
@@ -26,9 +27,9 @@ impl<'cid> Constant<'cid> {
         Constant::integer(value as u64, Type::i32(context), false)
     }
 
-    pub fn integer<'ctx>(value: u64, ty: &'ctx Type<'cid, IntegerType>, signed: bool) -> &'ctx Constant<'cid> {
+    pub fn integer<'ctx>(value: u64, ty: &'ctx IntegerType<'cid>, signed: bool) -> &'ctx Constant<'cid> {
         unsafe {
-            &*(LLVMConstInt(ty.as_raw(), value, signed as c_int) as *mut Constant)
+            &*(LLVMConstInt(upcast::<_,Type>(ty).as_raw(), value, signed as c_int) as *mut Constant)
         }
     }
 
@@ -38,15 +39,15 @@ impl<'cid> Constant<'cid> {
         }
     }
 
-    pub fn null<'ctx, SubTy>(ty: &'ctx Type<'cid, SubTy>) -> &'ctx Constant<'cid> {
+    pub fn null<'ctx>(ty: &'ctx Type<'cid>) -> &'ctx Constant<'cid> {
         unsafe {
             &*(LLVMConstNull(ty.as_raw()) as *mut Constant)
         }
     }
 
-    pub fn null_pointer<'ctx, PointeeTy>(ty: &'ctx Type<'cid, PointerType<PointeeTy>>) -> &'ctx Constant<'cid> {
+    pub fn null_pointer<'ctx, PointeeTy: ?Sized>(ty: &'ctx PointerType<'cid, PointeeTy>) -> &'ctx Constant<'cid> {
         unsafe {
-            &*(LLVMConstPointerNull(ty.as_raw()) as *mut Constant)
+            &*(LLVMConstPointerNull(upcast::<_,Type>(ty).as_raw()) as *mut Constant)
         }
     }
 

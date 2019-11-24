@@ -2,6 +2,7 @@ extern crate llvm_safe;
 #[macro_use] extern crate const_cstr_fork;
 
 use llvm_safe::{id, llvm};
+use llvm_safe::inheritance::upcast;
 
 fn main() {
     id::with2(|context_id, module_id| {
@@ -9,7 +10,7 @@ fn main() {
         let mut module = llvm::Module::new(module_id, const_cstr!("mymodule").as_cstr(), &context);
         let module_builder = module.builder();
 
-        let i32_ty = llvm::Type::i32(&context);
+        let i32_ty = upcast::<_,llvm::Type>(llvm::Type::i32(&context));
         let func_ty = llvm::Type::function(&[i32_ty], i32_ty, false);
         let mut builder = llvm::Builder::new(&context);
 
