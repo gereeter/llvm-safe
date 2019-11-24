@@ -173,6 +173,24 @@ impl<'cid, 'context, 'mid, 'fid, 'block> PositionedBuilder<'cid, 'context, 'mid,
         }
     }
 
+    pub fn memset(&mut self, ptr: &Value<'cid, 'mid, 'fid>, value: &Value<'cid, 'mid, 'fid>, len: &Value<'cid, 'mid, 'fid>, align: c_uint) -> &'block Value<'cid, 'mid, 'fid> {
+        unsafe {
+            &*(LLVMBuildMemSet(self.as_raw(), ptr.as_raw(), value.as_raw(), len.as_raw(), align) as *mut Value)
+        }
+    }
+
+    pub fn memcpy(&mut self, dest: &Value<'cid, 'mid, 'fid>, dest_align: c_uint, src: &Value<'cid, 'mid, 'fid>, src_align: c_uint, size: &Value<'cid, 'mid, 'fid>) -> &'block Value<'cid, 'mid, 'fid> {
+        unsafe {
+            &*(LLVMBuildMemCpy(self.as_raw(), dest.as_raw(), dest_align, src.as_raw(), src_align, size.as_raw()) as *mut Value)
+        }
+    }
+
+    pub fn memmove(&mut self, dest: &Value<'cid, 'mid, 'fid>, dest_align: c_uint, src: &Value<'cid, 'mid, 'fid>, src_align: c_uint, size: &Value<'cid, 'mid, 'fid>) -> &'block Value<'cid, 'mid, 'fid> {
+        unsafe {
+            &*(LLVMBuildMemMove(self.as_raw(), dest.as_raw(), dest_align, src.as_raw(), src_align, size.as_raw()) as *mut Value)
+        }
+    }
+
     pub fn alloca(&mut self, ty: &Type<'cid>, name: &CStr) -> &'block mut Alloca<'cid, 'mid, 'fid> {
         unsafe {
             &mut *(LLVMBuildAlloca(self.as_raw(), ty.as_raw(), name.as_ptr()) as *mut Alloca)
