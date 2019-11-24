@@ -6,7 +6,7 @@ use llvm_sys::core::*;
 use llvm_sys::analysis::*;
 
 use id::{Id, IdRef};
-use inheritance::downcast_unchecked;
+use inheritance::{upcast, downcast_unchecked, DerivesFrom};
 use opaque::Opaque;
 
 use llvm::{Context, BasicBlock, Label, Value, Type, FunctionType, PointerType};
@@ -103,6 +103,8 @@ pub struct FunctionLabel<'cid, 'mid> {
     _module_id: IdRef<'mid>,
     _opaque: Opaque
 }
+unsafe impl<'cid, 'mid> DerivesFrom<FunctionLabel<'cid, 'mid>> for FunctionLabel<'cid, 'mid> { }
+unsafe impl<'cid, 'mid, 'fid, General: ?Sized> DerivesFrom<General> for FunctionLabel<'cid, 'mid> where Value<'cid, 'mid, 'fid>: DerivesFrom<General> { }
 
 impl<'cid, 'mid> FunctionLabel<'cid, 'mid> {
     pub fn num_args(&self) -> usize {
@@ -119,12 +121,10 @@ impl<'cid, 'mid> FunctionLabel<'cid, 'mid> {
     }
 
     pub fn as_value<'fid>(&self) -> &Value<'cid, 'mid, 'fid> {
-        unsafe {
-            &*(self.as_raw() as *mut Value)
-        }
+        upcast(self)
     }
 
     pub fn as_raw(&self) -> LLVMValueRef {
-        self as *const FunctionLabel as *mut FunctionLabel as LLVMValueRef
+        self.as_value().as_raw()
     }
 }

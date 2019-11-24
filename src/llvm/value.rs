@@ -2,6 +2,7 @@ use llvm_sys::prelude::*;
 use llvm_sys::core::*;
 
 use id::IdRef;
+use inheritance::DerivesFrom;
 use opaque::Opaque;
 
 pub struct Value<'cid, 'mid, 'fid> {
@@ -10,6 +11,7 @@ pub struct Value<'cid, 'mid, 'fid> {
     _function_id: IdRef<'fid>,
     _opaque: Opaque
 }
+unsafe impl<'cid, 'mid, 'fid> DerivesFrom<Value<'cid, 'mid, 'fid>> for Value<'cid, 'mid, 'fid> { }
 
 impl<'cid, 'mid, 'fid> Value<'cid, 'mid, 'fid> {
     // FIXME: Should this require a mutable reference?

@@ -4,7 +4,7 @@ use llvm_sys::core::*;
 use libc::{c_char, c_uint, c_int};
 
 use id::IdRef;
-use inheritance::upcast;
+use inheritance::{upcast, DerivesFrom};
 use opaque::Opaque;
 
 use llvm::{Context, Type, IntegerType, PointerType, Value};
@@ -13,6 +13,8 @@ pub struct Constant<'cid> {
     _context: IdRef<'cid>,
     _opaque: Opaque
 }
+unsafe impl<'cid> DerivesFrom<Constant<'cid>> for Constant<'cid> { }
+unsafe impl<'cid, 'mid, 'fid, General: ?Sized> DerivesFrom<General> for Constant<'cid> where Value<'cid, 'mid, 'fid>: DerivesFrom<General> { }
 
 impl<'cid> Constant<'cid> {
     pub fn bool<'ctx>(value: bool, context: &'ctx Context<'cid>) -> &'ctx Constant<'cid> {
@@ -58,12 +60,10 @@ impl<'cid> Constant<'cid> {
     }
 
     pub fn as_value<'mid, 'fid>(&self) -> &Value<'cid, 'mid, 'fid> {
-        unsafe {
-            &*(self.as_raw() as *mut Value)
-        }
+        upcast(self)
     }
 
     pub fn as_raw(&self) -> LLVMValueRef {
-        self as *const Constant as *mut Constant as LLVMValueRef
+        self.as_value().as_raw()
     }
 }

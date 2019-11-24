@@ -1,17 +1,15 @@
 use llvm_sys::prelude::*;
 use llvm_sys::core::*;
 
-use id::IdRef;
-use opaque::Opaque;
+use inheritance::{upcast, DerivesFrom};
 
 use llvm::{Label, Value};
 
 pub struct Phi<'cid, 'mid, 'fid> {
-    _context_id: IdRef<'cid>,
-    _module_id: IdRef<'mid>,
-    _function_id: IdRef<'fid>,
-    _opaque: Opaque
+    _super: Value<'cid, 'mid, 'fid>
 }
+unsafe impl<'cid, 'mid, 'fid> DerivesFrom<Phi<'cid, 'mid, 'fid>> for Phi<'cid, 'mid, 'fid> { }
+unsafe impl<'cid, 'mid, 'fid, General: ?Sized> DerivesFrom<General> for Phi<'cid, 'mid, 'fid> where Value<'cid, 'mid, 'fid>: DerivesFrom<General> { }
 
 impl<'cid, 'mid, 'fid> Phi<'cid, 'mid, 'fid> {
     // TODO: Expose bulk addition?
@@ -22,12 +20,10 @@ impl<'cid, 'mid, 'fid> Phi<'cid, 'mid, 'fid> {
     }
 
     pub fn as_value(&self) -> &Value<'cid, 'mid, 'fid> {
-        unsafe {
-            &*(self.as_raw() as *mut Value)
-        }
+        upcast(self)
     }
 
     pub fn as_raw(&self) -> LLVMValueRef {
-        self as *const Phi as *mut Phi as LLVMValueRef
+        self.as_value().as_raw()
     }
 }

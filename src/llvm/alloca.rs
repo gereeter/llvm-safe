@@ -3,17 +3,15 @@ use llvm_sys::core::*;
 
 use libc::c_uint;
 
-use id::IdRef;
-use opaque::Opaque;
+use inheritance::{upcast, DerivesFrom};
 
 use llvm::Value;
 
 pub struct Alloca<'cid, 'mid, 'fid> {
-    _context_id: IdRef<'cid>,
-    _module_id: IdRef<'mid>,
-    _function_id: IdRef<'fid>,
-    _opaque: Opaque
+    _super: Value<'cid, 'mid, 'fid>
 }
+unsafe impl<'cid, 'mid, 'fid> DerivesFrom<Alloca<'cid, 'mid, 'fid>> for Alloca<'cid, 'mid, 'fid> { }
+unsafe impl<'cid, 'mid, 'fid, General: ?Sized> DerivesFrom<General> for Alloca<'cid, 'mid, 'fid> where Value<'cid, 'mid, 'fid>: DerivesFrom<General> { }
 
 impl<'cid, 'mid, 'fid> Alloca<'cid, 'mid, 'fid> {
     pub fn set_alignment(&mut self, alignment: c_uint) {
@@ -23,12 +21,10 @@ impl<'cid, 'mid, 'fid> Alloca<'cid, 'mid, 'fid> {
     }
 
     pub fn as_value(&self) -> &Value<'cid, 'mid, 'fid> {
-        unsafe {
-            &*(self.as_raw() as *mut Value)
-        }
+        upcast(self)
     }
 
     pub fn as_raw(&self) -> LLVMValueRef {
-        self as *const Alloca as *mut Alloca as LLVMValueRef
+        self.as_value().as_raw()
     }
 }
