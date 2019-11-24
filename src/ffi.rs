@@ -5,7 +5,7 @@ use libc::{self, c_char, c_void};
 
 use owned::{Owned, DropInPlace};
 
-#[repr(C)] // To ensure there is no difference in representation from CStr
+#[repr(transparent)]
 #[derive(Debug)]
 pub struct MallocCStr {
     inner: CStr
@@ -13,7 +13,7 @@ pub struct MallocCStr {
 
 impl DropInPlace for MallocCStr {
     unsafe fn drop_in_place(&mut self) {
-        libc::free(self as *mut _ as *mut c_void);
+        libc::free(&mut self.inner as *mut _ as *mut c_void);
     }
 }
 
