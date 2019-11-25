@@ -65,9 +65,9 @@ macro_rules! binop_impl {
 macro_rules! cast_impl {
     ( $($(#[$doc:meta])* $rust_name:ident, $c_name:ident)* )  => { $(
         $(#[$doc])*
-        pub fn $rust_name(&mut self, value: &Value<'cid, 'mid, 'fid, Type<'cid>>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid, Type<'cid>> {
+        pub fn $rust_name<Ty: DerivesFrom<Type<'cid>> + ?Sized>(&mut self, value: &Value<'cid, 'mid, 'fid, Type<'cid>>, dest_ty: &Ty, name: &CStr) -> &'block Value<'cid, 'mid, 'fid, Ty> {
             unsafe {
-                &*($c_name(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value<Type>)
+                &*($c_name(self.as_raw(), value.as_raw(), upcast(dest_ty).as_raw(), name.as_ptr()) as *const Value<Ty>)
             }
         }
     )* };
