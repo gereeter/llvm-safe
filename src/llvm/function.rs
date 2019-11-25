@@ -83,14 +83,14 @@ pub struct FunctionParams<'cid: 'function, 'mid: 'function, 'fid: 'function, 'fu
 }
 
 impl<'cid: 'function, 'mid: 'function, 'fid: 'function, 'function> Iterator for FunctionParams<'cid, 'mid, 'fid, 'function> {
-    type Item = &'function Value<'cid, 'mid, 'fid>;
+    type Item = &'function Value<'cid, 'mid, 'fid, Type<'cid>>;
 
-    fn next(&mut self) -> Option<&'function Value<'cid, 'mid, 'fid>> {
+    fn next(&mut self) -> Option<&'function Value<'cid, 'mid, 'fid, Type<'cid>>> {
         if self.inner.is_null() {
             None
         } else {
             unsafe {
-                let ret = Some(&*(self.inner as *const Value));
+                let ret = Some(&*(self.inner as *const Value<Type>));
                 self.inner = LLVMGetNextParam(self.inner);
                 ret
             }
@@ -104,7 +104,7 @@ pub struct FunctionLabel<'cid, 'mid> {
     _opaque: Opaque
 }
 unsafe impl<'cid, 'mid> DerivesFrom<FunctionLabel<'cid, 'mid>> for FunctionLabel<'cid, 'mid> { }
-unsafe impl<'cid, 'mid, 'fid, General: ?Sized> DerivesFrom<General> for FunctionLabel<'cid, 'mid> where Value<'cid, 'mid, 'fid>: DerivesFrom<General> { }
+unsafe impl<'cid, 'mid, 'fid, General: ?Sized> DerivesFrom<General> for FunctionLabel<'cid, 'mid> where Value<'cid, 'mid, 'fid, PointerType<'cid, FunctionType<'cid>>>: DerivesFrom<General> { }
 
 impl<'cid, 'mid> FunctionLabel<'cid, 'mid> {
     pub fn num_args(&self) -> usize {
@@ -120,7 +120,8 @@ impl<'cid, 'mid> FunctionLabel<'cid, 'mid> {
         }
     }
 
-    pub fn downcast_value<'a, 'fid>(value: &'a Value<'cid, 'mid, 'fid>) -> Result<&'a FunctionLabel<'cid, 'mid>, ()> {
+    // TODO: Restrict to FunctionType?
+    pub fn downcast_value<'a, 'fid, Ty: ?Sized>(value: &'a Value<'cid, 'mid, 'fid, Ty>) -> Result<&'a FunctionLabel<'cid, 'mid>, ()> {
         unsafe {
             let ret = LLVMIsAFunction(value.as_raw());
             if ret.is_null() {
@@ -131,7 +132,7 @@ impl<'cid, 'mid> FunctionLabel<'cid, 'mid> {
         }
     }
 
-    pub fn as_value<'fid>(&self) -> &Value<'cid, 'mid, 'fid> {
+    pub fn as_value<'fid>(&self) -> &Value<'cid, 'mid, 'fid, PointerType<'cid, FunctionType<'cid>>> {
         upcast(self)
     }
 

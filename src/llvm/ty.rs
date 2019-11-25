@@ -74,9 +74,9 @@ impl<'cid> Type<'cid> {
         }
     }
 
-    pub fn of_value<'a, 'mid, 'fid>(value: &'a Value<'cid, 'mid, 'fid>) -> &'a Type<'cid> {
+    pub fn of_value<'a, 'mid, 'fid, Ty: ?Sized>(value: &'a Value<'cid, 'mid, 'fid, Ty>) -> &'a Ty {
         unsafe {
-            &*(LLVMTypeOf(value.as_raw()) as *mut Type)
+            &*transmute_copy::<_,*mut Ty>(&LLVMTypeOf(value.as_raw()))
         }
     }
 

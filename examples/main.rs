@@ -53,8 +53,8 @@ fn main() {
                 let (_, entry) = function_builder.append_basic_block(const_cstr!("entry").as_cstr(), &context);
                 let builder = builder.position_at_end(entry);
 
-                let const_6 = builder.mul(llvm::Constant::i32(2, &context).as_value(), llvm::Constant::i32(3, &context).as_value(), const_cstr!("const_6").as_cstr());
-                let xplus4 = builder.add(arg, llvm::Constant::i32(4, &context).as_value(), const_cstr!("xplus4").as_cstr());
+                let const_6 = builder.mul(upcast(llvm::Constant::i32(2, &context)), upcast(llvm::Constant::i32(3, &context)), const_cstr!("const_6").as_cstr());
+                let xplus4 = builder.add(arg, upcast(llvm::Constant::i32(4, &context)), const_cstr!("xplus4").as_cstr());
                 let ret = builder.add(const_6, xplus4, const_cstr!("final").as_cstr());
                 builder.ret(ret);
             });
@@ -73,7 +73,7 @@ fn main() {
 
                 {
                     let builder = builder.position_at_end(entry);
-                    let cmp = builder.icmp(llvm::LLVMIntPredicate::LLVMIntSLT, arg, llvm::Constant::i32(0, &context).as_value(), const_cstr!("isneg").as_cstr());
+                    let cmp = builder.icmp(llvm::LLVMIntPredicate::LLVMIntSLT, arg, upcast(llvm::Constant::i32(0, &context)), const_cstr!("isneg").as_cstr());
                     builder.cond_br(cmp, negative_label, exit_label);
                 }
 

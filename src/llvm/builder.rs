@@ -7,11 +7,11 @@ use llvm_sys::prelude::*;
 use llvm_sys::core::*;
 pub use llvm_sys::{LLVMIntPredicate, LLVMRealPredicate};
 
-use inheritance::upcast;
+use inheritance::{upcast, DerivesFrom};
 use opaque::Opaque;
 use owned::{Owned, DropInPlace};
 
-use llvm::{Context, BasicBlock, Label, Value, Phi, Alloca, Type, FunctionType};
+use llvm::{Context, BasicBlock, Label, Value, Phi, Alloca, Type, FunctionType, PointerType};
 
 pub struct Builder<'cid: 'context, 'context> {
     _context: PhantomData<&'context Context<'cid>>,
@@ -54,9 +54,9 @@ pub struct PositionedBuilder<'cid: 'context, 'context: 'block, 'mid: 'block, 'fi
 macro_rules! binop_impl {
     ( $($(#[$doc:meta])* $rust_name:ident, $c_name:ident)* )  => { $(
         $(#[$doc])*
-        pub fn $rust_name(&mut self, lhs: &Value<'cid, 'mid, 'fid>, rhs: &Value<'cid, 'mid, 'fid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
+        pub fn $rust_name(&mut self, lhs: &Value<'cid, 'mid, 'fid, Type<'cid>>, rhs: &Value<'cid, 'mid, 'fid, Type<'cid>>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid, Type<'cid>> {
             unsafe {
-                &*($c_name(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value)
+                &*($c_name(self.as_raw(), lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value<Type>)
             }
         }
     )* };
@@ -65,9 +65,9 @@ macro_rules! binop_impl {
 macro_rules! cast_impl {
     ( $($(#[$doc:meta])* $rust_name:ident, $c_name:ident)* )  => { $(
         $(#[$doc])*
-        pub fn $rust_name(&mut self, value: &Value<'cid, 'mid, 'fid>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
+        pub fn $rust_name(&mut self, value: &Value<'cid, 'mid, 'fid, Type<'cid>>, dest_ty: &Type<'cid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid, Type<'cid>> {
             unsafe {
-                &*($c_name(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value)
+                &*($c_name(self.as_raw(), value.as_raw(), dest_ty.as_raw(), name.as_ptr()) as *const Value<Type>)
             }
         }
     )* };
@@ -82,9 +82,9 @@ impl<'cid, 'context, 'mid, 'fid, 'block> PositionedBuilder<'cid, 'context, 'mid,
     /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#aa7cdfc8d05a480d276dede8645bde46d
     /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#ga61def0c0fc591008bc9ec04ffc601093
     /// [Rust]: LLVMBuildBr
-    pub fn br(&mut self, target: &Label<'fid>) -> &'block Value<'cid, 'mid, 'fid> {
+    pub fn br(&mut self, target: &Label<'fid>) -> &'block Value<'cid, 'mid, 'fid, Type<'cid>> {
         unsafe {
-            &*(LLVMBuildBr(self.as_raw(), target.as_raw()) as *const Value)
+            &*(LLVMBuildBr(self.as_raw(), target.as_raw()) as *const Value<Type>)
         }
     }
 
@@ -96,9 +96,9 @@ impl<'cid, 'context, 'mid, 'fid, 'block> PositionedBuilder<'cid, 'context, 'mid,
     /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#a3393497feaca1880ab3168ee3db1d7a4
     /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#gaaa5498fef5a2da8016c2cc1278c41c51
     /// [Rust]: LLVMBuildCondBr
-    pub fn cond_br(&mut self, cond: &Value<'cid, 'mid, 'fid>, true_dest: &Label<'fid>, false_dest: &Label<'fid>) -> &'block Value<'cid, 'mid, 'fid> {
+    pub fn cond_br(&mut self, cond: &Value<'cid, 'mid, 'fid, Type<'cid>>, true_dest: &Label<'fid>, false_dest: &Label<'fid>) -> &'block Value<'cid, 'mid, 'fid, Type<'cid>> {
         unsafe {
-            &*(LLVMBuildCondBr(self.as_raw(), cond.as_raw(), true_dest.as_raw(), false_dest.as_raw()) as *const Value)
+            &*(LLVMBuildCondBr(self.as_raw(), cond.as_raw(), true_dest.as_raw(), false_dest.as_raw()) as *const Value<Type>)
         }
     }
 
@@ -373,9 +373,9 @@ binop_impl!{
     /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#afd7e0f4bb499af728f9325e41afc344c
     /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#gaf748025627b03f4f2659b006b127b758
     /// [Rust]: LLVMBuildNeg
-    pub fn neg(&mut self, value: &Value<'cid, 'mid, 'fid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
+    pub fn neg(&mut self, value: &Value<'cid, 'mid, 'fid, Type<'cid>>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid, Type<'cid>> {
         unsafe {
-            &*(LLVMBuildNeg(self.as_raw(), value.as_raw(), name.as_ptr()) as *const Value)
+            &*(LLVMBuildNeg(self.as_raw(), value.as_raw(), name.as_ptr()) as *const Value<Type>)
         }
     }
 
@@ -387,9 +387,9 @@ binop_impl!{
     /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#afadf0ed4391eedf48ea806b83e7d6263
     /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#ga93de3da5c9ab84b1fb2a167b96e37e1a
     /// [Rust]: LLVMBuildFNeg
-    pub fn fneg(&mut self, value: &Value<'cid, 'mid, 'fid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
+    pub fn fneg(&mut self, value: &Value<'cid, 'mid, 'fid, Type<'cid>>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid, Type<'cid>> {
         unsafe {
-            &*(LLVMBuildFNeg(self.as_raw(), value.as_raw(), name.as_ptr()) as *const Value)
+            &*(LLVMBuildFNeg(self.as_raw(), value.as_raw(), name.as_ptr()) as *const Value<Type>)
         }
     }
 
@@ -401,9 +401,9 @@ binop_impl!{
     /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#a5141946c874cc73e682aa0b3b4cdb561
     /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#ga05d09bddf47c45595a9f87b38e5ea924
     /// [Rust]: LLVMBuildNot
-    pub fn not(&mut self, value: &Value<'cid, 'mid, 'fid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
+    pub fn not(&mut self, value: &Value<'cid, 'mid, 'fid, Type<'cid>>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid, Type<'cid>> {
         unsafe {
-            &*(LLVMBuildNot(self.as_raw(), value.as_raw(), name.as_ptr()) as *const Value)
+            &*(LLVMBuildNot(self.as_raw(), value.as_raw(), name.as_ptr()) as *const Value<Type>)
         }
     }
 
@@ -415,9 +415,9 @@ binop_impl!{
     /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#a103d309fa238e186311cbeb961b5bcf4
     /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#ga73559fb71fcb2caee54375378f49d174
     /// [Rust]: LLVMBuildICmp
-    pub fn icmp(&mut self, pred: LLVMIntPredicate, lhs: &Value<'cid, 'mid, 'fid>, rhs: &Value<'cid, 'mid, 'fid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
+    pub fn icmp(&mut self, pred: LLVMIntPredicate, lhs: &Value<'cid, 'mid, 'fid, Type<'cid>>, rhs: &Value<'cid, 'mid, 'fid, Type<'cid>>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid, Type<'cid>> {
         unsafe {
-            &*(LLVMBuildICmp(self.as_raw(), pred, lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value)
+            &*(LLVMBuildICmp(self.as_raw(), pred, lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value<Type>)
         }
     }
 
@@ -429,9 +429,9 @@ binop_impl!{
     /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#a02e6bb4130ab2bd333e859dd2565d962
     /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#ga220dc4644a992417951e7f42fa0bc408
     /// [Rust]: LLVMBuildFCmp
-    pub fn fcmp(&mut self, pred: LLVMRealPredicate, lhs: &Value<'cid, 'mid, 'fid>, rhs: &Value<'cid, 'mid, 'fid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
+    pub fn fcmp(&mut self, pred: LLVMRealPredicate, lhs: &Value<'cid, 'mid, 'fid, Type<'cid>>, rhs: &Value<'cid, 'mid, 'fid, Type<'cid>>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid, Type<'cid>> {
         unsafe {
-            &*(LLVMBuildFCmp(self.as_raw(), pred, lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value)
+            &*(LLVMBuildFCmp(self.as_raw(), pred, lhs.as_raw(), rhs.as_raw(), name.as_ptr()) as *const Value<Type>)
         }
     }
 
@@ -565,9 +565,9 @@ cast_impl!{
     /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#a9efb4ffb182a6e9c3765a8dbd51ce162
     /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#gacaeda0ff783160af64d0d27a5dc2c836
     /// [Rust]: LLVMBuildGEP2
-    pub fn get_element_ptr(&mut self, ty: &Type<'cid>, ptr: &Value<'cid, 'mid, 'fid>, indices: &[&Value<'cid, 'mid, 'fid>], name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
+    pub fn get_element_ptr(&mut self, ty: &Type<'cid>, ptr: &Value<'cid, 'mid, 'fid, PointerType<'cid, Type<'cid>>>, indices: &[&Value<'cid, 'mid, 'fid, Type<'cid>>], name: &CStr) -> &'block Value<'cid, 'mid, 'fid, PointerType<'cid, Type<'cid>>> {
         unsafe {
-            &*(LLVMBuildGEP2(self.as_raw(), ty.as_raw(), ptr.as_raw(), indices.as_ptr() as *mut LLVMValueRef, indices.len() as c_uint, name.as_ptr()) as *const Value)
+            &*(LLVMBuildGEP2(self.as_raw(), ty.as_raw(), ptr.as_raw(), indices.as_ptr() as *mut LLVMValueRef, indices.len() as c_uint, name.as_ptr()) as *const Value<PointerType<Type>>)
         }
     }
 
@@ -579,9 +579,9 @@ cast_impl!{
     /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#a2e6fb98fb80267ebfad1e6c8691e8675
     /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#gaa67a3cd902bea7e7c1b8185f0c23fc13
     /// [Rust]: LLVMBuildInBoundsGEP2
-    pub fn get_element_ptr_in_bounds(&mut self, ty: &Type<'cid>, ptr: &Value<'cid, 'mid, 'fid>, indices: &[&Value<'cid, 'mid, 'fid>], name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
+    pub fn get_element_ptr_in_bounds(&mut self, ty: &Type<'cid>, ptr: &Value<'cid, 'mid, 'fid, PointerType<'cid, Type<'cid>>>, indices: &[&Value<'cid, 'mid, 'fid, Type<'cid>>], name: &CStr) -> &'block Value<'cid, 'mid, 'fid, PointerType<'cid, Type<'cid>>> {
         unsafe {
-            &*(LLVMBuildInBoundsGEP2(self.as_raw(), ty.as_raw(), ptr.as_raw(), indices.as_ptr() as *mut LLVMValueRef, indices.len() as c_uint, name.as_ptr()) as *const Value)
+            &*(LLVMBuildInBoundsGEP2(self.as_raw(), ty.as_raw(), ptr.as_raw(), indices.as_ptr() as *mut LLVMValueRef, indices.len() as c_uint, name.as_ptr()) as *const Value<PointerType<Type>>)
         }
     }
 
@@ -593,9 +593,9 @@ cast_impl!{
     /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilderBase.html#a91f61bd0810e6ff8745835115711371d
     /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#ga61b055cd2f1eb7cc35f9776752583ba9
     /// [Rust]: LLVMBuildMemSet
-    pub fn memset(&mut self, ptr: &Value<'cid, 'mid, 'fid>, value: &Value<'cid, 'mid, 'fid>, len: &Value<'cid, 'mid, 'fid>, align: c_uint) -> &'block Value<'cid, 'mid, 'fid> {
+    pub fn memset(&mut self, ptr: &Value<'cid, 'mid, 'fid, Type<'cid>>, value: &Value<'cid, 'mid, 'fid, Type<'cid>>, len: &Value<'cid, 'mid, 'fid, Type<'cid>>, align: c_uint) -> &'block Value<'cid, 'mid, 'fid, Type<'cid>> {
         unsafe {
-            &*(LLVMBuildMemSet(self.as_raw(), ptr.as_raw(), value.as_raw(), len.as_raw(), align) as *mut Value)
+            &*(LLVMBuildMemSet(self.as_raw(), ptr.as_raw(), value.as_raw(), len.as_raw(), align) as *mut Value<Type>)
         }
     }
 
@@ -607,9 +607,9 @@ cast_impl!{
     /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilderBase.html#ac1c9cc4a0006b6810c4c75199c414b21
     /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#gab7feac5d1279d667ccab24cce46f3ff1
     /// [Rust]: LLVMBuildMemCpy
-    pub fn memcpy(&mut self, dest: &Value<'cid, 'mid, 'fid>, dest_align: c_uint, src: &Value<'cid, 'mid, 'fid>, src_align: c_uint, size: &Value<'cid, 'mid, 'fid>) -> &'block Value<'cid, 'mid, 'fid> {
+    pub fn memcpy(&mut self, dest: &Value<'cid, 'mid, 'fid, Type<'cid>>, dest_align: c_uint, src: &Value<'cid, 'mid, 'fid, Type<'cid>>, src_align: c_uint, size: &Value<'cid, 'mid, 'fid, Type<'cid>>) -> &'block Value<'cid, 'mid, 'fid, Type<'cid>> {
         unsafe {
-            &*(LLVMBuildMemCpy(self.as_raw(), dest.as_raw(), dest_align, src.as_raw(), src_align, size.as_raw()) as *mut Value)
+            &*(LLVMBuildMemCpy(self.as_raw(), dest.as_raw(), dest_align, src.as_raw(), src_align, size.as_raw()) as *mut Value<Type>)
         }
     }
 
@@ -621,9 +621,9 @@ cast_impl!{
     /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilderBase.html#acdaa7a9003d8f4bad64b6048e8ef70ab
     /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#gae1dffdc6f022bcbe99fbf2ed4a8ae747
     /// [Rust]: LLVMBuildMemMove
-    pub fn memmove(&mut self, dest: &Value<'cid, 'mid, 'fid>, dest_align: c_uint, src: &Value<'cid, 'mid, 'fid>, src_align: c_uint, size: &Value<'cid, 'mid, 'fid>) -> &'block Value<'cid, 'mid, 'fid> {
+    pub fn memmove(&mut self, dest: &Value<'cid, 'mid, 'fid, Type<'cid>>, dest_align: c_uint, src: &Value<'cid, 'mid, 'fid, Type<'cid>>, src_align: c_uint, size: &Value<'cid, 'mid, 'fid, Type<'cid>>) -> &'block Value<'cid, 'mid, 'fid, Type<'cid>> {
         unsafe {
-            &*(LLVMBuildMemMove(self.as_raw(), dest.as_raw(), dest_align, src.as_raw(), src_align, size.as_raw()) as *mut Value)
+            &*(LLVMBuildMemMove(self.as_raw(), dest.as_raw(), dest_align, src.as_raw(), src_align, size.as_raw()) as *mut Value<Type>)
         }
     }
 
@@ -635,9 +635,9 @@ cast_impl!{
     /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#ae3595500d998878acc071f65e613e750
     /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#ga3a153f9ef93ac41cf98605a28af5392f
     /// [Rust]: LLVMBuildAlloca
-    pub fn alloca(&mut self, ty: &Type<'cid>, name: &CStr) -> &'block mut Alloca<'cid, 'mid, 'fid> {
+    pub fn alloca<Ty: DerivesFrom<Type<'cid>> + ?Sized>(&mut self, ty: &Ty, name: &CStr) -> &'block mut Alloca<'cid, 'mid, 'fid, Ty> {
         unsafe {
-            &mut *(LLVMBuildAlloca(self.as_raw(), ty.as_raw(), name.as_ptr()) as *mut Alloca)
+            &mut *(LLVMBuildAlloca(self.as_raw(), upcast(ty).as_raw(), name.as_ptr()) as *mut Alloca<Ty>)
         }
     }
 
@@ -649,9 +649,9 @@ cast_impl!{
     /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#ae3595500d998878acc071f65e613e750
     /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#ga701147c87c04ea39cd1ecb40740950a0
     /// [Rust]: LLVMBuildArrayAlloca
-    pub fn array_alloca(&mut self, ty: &Type<'cid>, len: &Value<'cid, 'mid, 'fid>, name: &CStr) -> &'block mut Alloca<'cid, 'mid, 'fid> {
+    pub fn array_alloca<Ty: DerivesFrom<Type<'cid>> + ?Sized>(&mut self, ty: &Ty, len: &Value<'cid, 'mid, 'fid, Type<'cid>>, name: &CStr) -> &'block mut Alloca<'cid, 'mid, 'fid, Ty> {
         unsafe {
-            &mut *(LLVMBuildArrayAlloca(self.as_raw(), ty.as_raw(), len.as_raw(), name.as_ptr()) as *mut Alloca)
+            &mut *(LLVMBuildArrayAlloca(self.as_raw(), upcast(ty).as_raw(), len.as_raw(), name.as_ptr()) as *mut Alloca<Ty>)
         }
     }
 
@@ -663,9 +663,9 @@ cast_impl!{
     /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#a2d5887ed3edefb0f54281416f655bd63
     /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#ga025026f91ebe29901a52f5f261f3fc57
     /// [Rust]: LLVMBuildLoad2
-    pub fn load(&mut self, ty: &Type<'cid>, ptr: &Value<'cid, 'mid, 'fid>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
+    pub fn load<Ty: DerivesFrom<Type<'cid>> + ?Sized>(&mut self, ty: &Ty, ptr: &Value<'cid, 'mid, 'fid, PointerType<'cid, Type<'cid>>>, name: &CStr) -> &'block Value<'cid, 'mid, 'fid, Ty> {
         unsafe {
-            &*(LLVMBuildLoad2(self.as_raw(), ty.as_raw(), ptr.as_raw(), name.as_ptr()) as *const Value)
+            &*(LLVMBuildLoad2(self.as_raw(), upcast(ty).as_raw(), ptr.as_raw(), name.as_ptr()) as *const Value<Ty>)
         }
     }
 
@@ -677,7 +677,7 @@ cast_impl!{
     /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#a867941d6f2e653fa0fc1004602fa9fb3
     /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#ga9a320c8b85497624cffd657178fbb08b
     /// [Rust]: LLVMBuildStore
-    pub fn store(&mut self, value: &Value<'cid, 'mid, 'fid>, ptr: &Value<'cid, 'mid, 'fid>) {
+    pub fn store(&mut self, value: &Value<'cid, 'mid, 'fid, Type<'cid>>, ptr: &Value<'cid, 'mid, 'fid, PointerType<'cid, Type<'cid>>>) {
         unsafe {
             LLVMBuildStore(self.as_raw(), value.as_raw(), ptr.as_raw());
         }
@@ -691,9 +691,9 @@ cast_impl!{
     /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#a4d5899caa1a0ec02ec1825461cf05ca2
     /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#gad10754a4b0988de26d60cf82df467c06
     /// [Rust]: LLVMBuildPhi
-    pub fn phi(&mut self, ty: &Type<'cid>, name: &CStr) -> &'block mut Phi<'cid, 'mid, 'fid> {
+    pub fn phi<Ty: DerivesFrom<Type<'cid>> + ?Sized>(&mut self, ty: &Ty, name: &CStr) -> &'block mut Phi<'cid, 'mid, 'fid, Ty> {
         unsafe {
-            &mut *(LLVMBuildPhi(self.as_raw(), ty.as_raw(), name.as_ptr()) as *mut Phi)
+            &mut *(LLVMBuildPhi(self.as_raw(), upcast(ty).as_raw(), name.as_ptr()) as *mut Phi<Ty>)
         }
     }
 
@@ -705,9 +705,9 @@ cast_impl!{
     /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#a2f2b90f6238b8dd8ffd39ec6b05f5772
     /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#ga821864790c90dc5193078c4e17b8cb09
     /// [Rust]: LLVMBuildCall2
-    pub fn call(&mut self, ty: &FunctionType<'cid>, func: &Value<'cid, 'mid, 'fid>, args: &[&Value<'cid, 'mid, 'fid>], name: &CStr) -> &'block Value<'cid, 'mid, 'fid> {
+    pub fn call(&mut self, ty: &FunctionType<'cid>, func: &Value<'cid, 'mid, 'fid, Type<'cid>>, args: &[&Value<'cid, 'mid, 'fid, Type<'cid>>], name: &CStr) -> &'block Value<'cid, 'mid, 'fid, Type<'cid>> {
         unsafe {
-            &*(LLVMBuildCall2(self.as_raw(), upcast::<_,Type>(ty).as_raw(), func.as_raw(), args.as_ptr() as *const LLVMValueRef as *mut LLVMValueRef, args.len() as u32, name.as_ptr()) as *const Value)
+            &*(LLVMBuildCall2(self.as_raw(), upcast::<_,Type>(ty).as_raw(), func.as_raw(), args.as_ptr() as *const LLVMValueRef as *mut LLVMValueRef, args.len() as u32, name.as_ptr()) as *const Value<Type>)
         }
     }
 
@@ -719,7 +719,7 @@ cast_impl!{
     /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#ab87f1be0c94c05973a02a06a915e76f7
     /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#gae4c870d69f9787fe98a824a634473155
     /// [Rust]: LLVMBuildRet
-    pub fn ret(&mut self, value: &Value<'cid, 'mid, 'fid>) {
+    pub fn ret(&mut self, value: &Value<'cid, 'mid, 'fid, Type<'cid>>) {
         unsafe {
             LLVMBuildRet(self.as_raw(), value.as_raw());
         }

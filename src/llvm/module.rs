@@ -6,7 +6,7 @@ use llvm_sys::core::*;
 use llvm_sys::target::LLVMSetModuleDataLayout;
 
 use id::{Id, IdRef};
-use inheritance::upcast;
+use inheritance::{upcast, DerivesFrom};
 use opaque::Opaque;
 use owned::{Owned, DropInPlace};
 
@@ -64,9 +64,9 @@ pub struct ModuleBuilder<'cid: 'module, 'mid: 'module, 'module> {
 }
 
 impl<'cid, 'mid, 'module> ModuleBuilder<'cid, 'mid, 'module> {
-    pub fn add_global(&mut self, name: &CStr, ty: &Type<'cid>) -> &'module mut Global<'cid, 'mid> {
+    pub fn add_global<Ty: DerivesFrom<Type<'cid>> + ?Sized>(&mut self, name: &CStr, ty: &Ty) -> &'module mut Global<'cid, 'mid, Ty> {
         unsafe {
-            &mut *(LLVMAddGlobal(self.as_raw(), ty.as_raw(), name.as_ptr()) as *mut Global)
+            &mut *(LLVMAddGlobal(self.as_raw(), upcast(ty).as_raw(), name.as_ptr()) as *mut Global<Ty>)
         }
     }
 

@@ -3,6 +3,7 @@ use std::ffi::CString;
 use std::iter::repeat;
 
 use llvm_safe::id;
+use llvm_safe::inheritance::upcast;
 use llvm_safe::llvm;
 use llvm_safe::llvm::{Constant, Type, Function, Value};
 use llvm_safe::llvm::LLVMRealPredicate;
@@ -22,7 +23,7 @@ impl<'cid, 'context, 'mid, 'module> Context<'cid, 'context, 'mid, 'module> {
         }
     }
 
-    pub fn trans_expr<'fid: 'block, 'block>(&mut self, expr: &ast::Expr, fbuilder: &mut llvm::FunctionBuilder<'cid, 'mid, 'fid, 'block>, builder: &mut llvm::PositionedBuilder<'cid, 'context, 'mid, 'fid, 'block>, named_values: &HashMap<&str, &'block Value<'cid, 'mid, 'fid>>) -> Result<&'block Value<'cid, 'mid, 'fid>, &'static str> where 'module: 'block {
+    pub fn trans_expr<'fid: 'block, 'block>(&mut self, expr: &ast::Expr, fbuilder: &mut llvm::FunctionBuilder<'cid, 'mid, 'fid, 'block>, builder: &mut llvm::PositionedBuilder<'cid, 'context, 'mid, 'fid, 'block>, named_values: &HashMap<&str, &'block Value<'cid, 'mid, 'fid, Type<'cid>>>) -> Result<&'block Value<'cid, 'mid, 'fid, Type<'cid>>, &'static str> where 'module: 'block {
         match *expr {
             ast::Expr::Number(value) => Ok(Constant::f64(value, self.context).as_value()),
             ast::Expr::Variable(ref name) => named_values.get(&**name).cloned().ok_or("Unknown name in trans"),
@@ -56,7 +57,7 @@ impl<'cid, 'context, 'mid, 'module> Context<'cid, 'context, 'mid, 'module> {
 
                         let arg_vals = args.iter().map(|arg| self.trans_expr(arg, fbuilder, builder, named_values).unwrap()).collect::<Vec<_>>();
 
-                        Ok(builder.call(func.function_type(), func.as_value(), &arg_vals, const_cstr!("calltmp").as_cstr()))
+                        Ok(builder.call(func.function_type(), upcast(func), &arg_vals, const_cstr!("calltmp").as_cstr()))
                     },
                     None => Err("Calling function that does not exist")
                 }
