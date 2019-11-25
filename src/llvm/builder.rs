@@ -593,7 +593,7 @@ cast_impl!{
     /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilderBase.html#a91f61bd0810e6ff8745835115711371d
     /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#ga61b055cd2f1eb7cc35f9776752583ba9
     /// [Rust]: LLVMBuildMemSet
-    pub fn memset(&mut self, ptr: &Value<'cid, 'mid, 'fid, Type<'cid>>, value: &Value<'cid, 'mid, 'fid, Type<'cid>>, len: &Value<'cid, 'mid, 'fid, Type<'cid>>, align: c_uint) -> &'block Value<'cid, 'mid, 'fid, Type<'cid>> {
+    pub fn memset(&mut self, ptr: &Value<'cid, 'mid, 'fid, PointerType<'cid, Type<'cid>>>, value: &Value<'cid, 'mid, 'fid, Type<'cid>>, len: &Value<'cid, 'mid, 'fid, Type<'cid>>, align: c_uint) -> &'block Value<'cid, 'mid, 'fid, Type<'cid>> {
         unsafe {
             &*(LLVMBuildMemSet(self.as_raw(), ptr.as_raw(), value.as_raw(), len.as_raw(), align) as *mut Value<Type>)
         }
@@ -607,7 +607,7 @@ cast_impl!{
     /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilderBase.html#ac1c9cc4a0006b6810c4c75199c414b21
     /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#gab7feac5d1279d667ccab24cce46f3ff1
     /// [Rust]: LLVMBuildMemCpy
-    pub fn memcpy(&mut self, dest: &Value<'cid, 'mid, 'fid, Type<'cid>>, dest_align: c_uint, src: &Value<'cid, 'mid, 'fid, Type<'cid>>, src_align: c_uint, size: &Value<'cid, 'mid, 'fid, Type<'cid>>) -> &'block Value<'cid, 'mid, 'fid, Type<'cid>> {
+    pub fn memcpy(&mut self, dest: &Value<'cid, 'mid, 'fid, PointerType<'cid, Type<'cid>>>, dest_align: c_uint, src: &Value<'cid, 'mid, 'fid, PointerType<'cid, Type<'cid>>>, src_align: c_uint, size: &Value<'cid, 'mid, 'fid, Type<'cid>>) -> &'block Value<'cid, 'mid, 'fid, Type<'cid>> {
         unsafe {
             &*(LLVMBuildMemCpy(self.as_raw(), dest.as_raw(), dest_align, src.as_raw(), src_align, size.as_raw()) as *mut Value<Type>)
         }
@@ -621,7 +621,7 @@ cast_impl!{
     /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilderBase.html#acdaa7a9003d8f4bad64b6048e8ef70ab
     /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#gae1dffdc6f022bcbe99fbf2ed4a8ae747
     /// [Rust]: LLVMBuildMemMove
-    pub fn memmove(&mut self, dest: &Value<'cid, 'mid, 'fid, Type<'cid>>, dest_align: c_uint, src: &Value<'cid, 'mid, 'fid, Type<'cid>>, src_align: c_uint, size: &Value<'cid, 'mid, 'fid, Type<'cid>>) -> &'block Value<'cid, 'mid, 'fid, Type<'cid>> {
+    pub fn memmove(&mut self, dest: &Value<'cid, 'mid, 'fid, PointerType<'cid, Type<'cid>>>, dest_align: c_uint, src: &Value<'cid, 'mid, 'fid, PointerType<'cid, Type<'cid>>>, src_align: c_uint, size: &Value<'cid, 'mid, 'fid, Type<'cid>>) -> &'block Value<'cid, 'mid, 'fid, Type<'cid>> {
         unsafe {
             &*(LLVMBuildMemMove(self.as_raw(), dest.as_raw(), dest_align, src.as_raw(), src_align, size.as_raw()) as *mut Value<Type>)
         }
