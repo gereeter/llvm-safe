@@ -11,7 +11,7 @@ use inheritance::{upcast, DerivesFrom};
 use opaque::Opaque;
 use owned::{Owned, DropInPlace};
 
-use llvm::{Context, BasicBlock, Label, Value, Phi, Alloca, Type, FunctionType, PointerType};
+use llvm::{Context, BasicBlock, Label, Value, Phi, Alloca, Type, FunctionType, IntegerType, PointerType};
 
 pub struct Builder<'cid: 'context, 'context> {
     _context: PhantomData<&'context Context<'cid>>,
@@ -565,7 +565,7 @@ cast_impl!{
     /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#a9efb4ffb182a6e9c3765a8dbd51ce162
     /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#gacaeda0ff783160af64d0d27a5dc2c836
     /// [Rust]: LLVMBuildGEP2
-    pub fn get_element_ptr(&mut self, ty: &Type<'cid>, ptr: &Value<'cid, 'mid, 'fid, PointerType<'cid, Type<'cid>>>, indices: &[&Value<'cid, 'mid, 'fid, Type<'cid>>], name: &CStr) -> &'block Value<'cid, 'mid, 'fid, PointerType<'cid, Type<'cid>>> {
+    pub fn get_element_ptr(&mut self, ty: &Type<'cid>, ptr: &Value<'cid, 'mid, 'fid, PointerType<'cid, Type<'cid>>>, indices: &[&Value<'cid, 'mid, 'fid, IntegerType<'cid>>], name: &CStr) -> &'block Value<'cid, 'mid, 'fid, PointerType<'cid, Type<'cid>>> {
         unsafe {
             &*(LLVMBuildGEP2(self.as_raw(), ty.as_raw(), ptr.as_raw(), indices.as_ptr() as *mut LLVMValueRef, indices.len() as c_uint, name.as_ptr()) as *const Value<PointerType<Type>>)
         }
@@ -579,7 +579,7 @@ cast_impl!{
     /// [C++]: https://llvm.org/doxygen/classllvm_1_1IRBuilder.html#a2e6fb98fb80267ebfad1e6c8691e8675
     /// [C]: https://llvm.org/doxygen/group__LLVMCCoreInstructionBuilder.html#gaa67a3cd902bea7e7c1b8185f0c23fc13
     /// [Rust]: LLVMBuildInBoundsGEP2
-    pub fn get_element_ptr_in_bounds(&mut self, ty: &Type<'cid>, ptr: &Value<'cid, 'mid, 'fid, PointerType<'cid, Type<'cid>>>, indices: &[&Value<'cid, 'mid, 'fid, Type<'cid>>], name: &CStr) -> &'block Value<'cid, 'mid, 'fid, PointerType<'cid, Type<'cid>>> {
+    pub fn get_element_ptr_in_bounds(&mut self, ty: &Type<'cid>, ptr: &Value<'cid, 'mid, 'fid, PointerType<'cid, Type<'cid>>>, indices: &[&Value<'cid, 'mid, 'fid, IntegerType<'cid>>], name: &CStr) -> &'block Value<'cid, 'mid, 'fid, PointerType<'cid, Type<'cid>>> {
         unsafe {
             &*(LLVMBuildInBoundsGEP2(self.as_raw(), ty.as_raw(), ptr.as_raw(), indices.as_ptr() as *mut LLVMValueRef, indices.len() as c_uint, name.as_ptr()) as *const Value<PointerType<Type>>)
         }
